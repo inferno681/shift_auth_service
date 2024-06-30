@@ -1,0 +1,17 @@
+services:
+  app:
+    container_name: 'auth-service'
+    build:
+      context: app/
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    ports:
+      - '28081:8080'
+    command: sleep infinity
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - PYTHONPATH=/workspace/src
