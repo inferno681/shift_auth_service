@@ -17,6 +17,7 @@ flake8 = "^7.1.0"
 isort = "^5.13.2"
 black = "^24.4.2"
 pytest = "^8.2.2"
+pytest-lazy-fixtures = "^1.0.7"
 
 [build-system]
 requires = ["poetry-core"]

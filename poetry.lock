@@ -425,6 +425,20 @@ pluggy = ">=1.5,<2.0"
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-lazy-fixtures"
+version = "1.0.7"
+description = "Allows you to use fixtures in @pytest.mark.parametrize."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "pytest_lazy_fixtures-1.0.7-py3-none-any.whl", hash = "sha256:71428385b166cdb0fa3f2a3c72b5a5f95fa58f977816877b9b9c1e857143e194"},
+    {file = "pytest_lazy_fixtures-1.0.7.tar.gz", hash = "sha256:87ef7424dc0229ff9cb72d482f49b7806535c3500641f612c13ddf243c9adacb"},
+]
+
+[package.dependencies]
+pytest = ">=7"
+
+[[package]]
 name = "python-dotenv"
 version = "1.0.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -452,4 +466,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "9130871a91ea9ed0d62d5c53a53fd2952507f9bf82770594157430e8e0729326"
+content-hash = "874ce53bdb50e3f8d644ee55ed44bc3228fa5f8ba0f44640883af094af554ed2"

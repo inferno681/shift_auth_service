@@ -43,8 +43,7 @@ class AuthService:
             return USER_EXISTS.format(login=login)
         hashed_password = AuthService.hash_password(password)
         user = User(login=login, hashed_password=hashed_password)
-        JWT = AuthService.generate_jwt_token(user.id)
-        user.JWT = JWT
+        user.JWT = AuthService.generate_jwt_token(user.id)
         users.append(user)
         return user.JWT
 
