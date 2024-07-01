@@ -8,7 +8,10 @@ Cервис авторизации.
 ```bash
 git clone git@hub.mos.ru:shift-python/y2024/homeworks/vstakrotskij/auth_service.git
 ```
-
+Создайте файл .env, в корневой папке проекта, с переменными окружения.
+```
+SECRET = (секрет для создания токена)
+```
 Для установки виртуального окружения с помощью Poetry нужно установить его через pip:
 ```bash
 pip install poetry
