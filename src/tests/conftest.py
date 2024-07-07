@@ -17,14 +17,15 @@ def user_data():
     return {"login": "user", "password": "password"}
 
 
-@pytest.fixture()
-def wrong_password_user_data():
-    return {"login": "user", "password": "wrongpassword"}
-
-
-@pytest.fixture()
-def no_user_data():
-    return {"login": "no_user", "password": "wrongpassword"}
+@pytest.fixture(
+    params=(
+        {"login": "user", "password": "wrongpassword"},
+        {"login": "no_user", "password": "wrongpassword"},
+    ),
+    ids=("wrong_password", "no_user"),
+)
+def wrong_user_data(request):
+    return request.param
 
 
 @pytest.fixture()

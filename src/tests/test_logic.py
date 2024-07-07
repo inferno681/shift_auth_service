@@ -5,8 +5,6 @@ from app.config import config
 from app.constants import *
 from app.main import AuthService, users
 
-WRONG_PASSWORD_USER_DATA = pytest.lazy_fixtures("wrong_password_user_data")
-NO_USER_DATA = pytest.lazy_fixtures("no_user_data")
 auth_service = AuthService()
 
 
@@ -29,10 +27,7 @@ def test_authentication(user_data):
     assert jwt is not None
 
 
-@pytest.mark.parametrize(
-    "wrong_user_data", (WRONG_PASSWORD_USER_DATA, NO_USER_DATA)
-)
-def test_authentication_wrong_password(user_data, wrong_user_data):
+def test_wrong_authentication(user_data, wrong_user_data):
     auth_service.registration(**user_data)
     jwt = auth_service.authenticate(**wrong_user_data)
     assert jwt is None
