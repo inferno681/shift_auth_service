@@ -8,7 +8,7 @@ import jwt
 from app.config import config
 from app.constants import *
 
-users = []
+users = []  # type: ignore
 
 
 @dataclass
@@ -48,7 +48,7 @@ class AuthService:
         return user.JWT
 
     @staticmethod
-    def authenticate(login: str, password: str) -> bool:
+    def authentication(login: str, password: str) -> str | None:
         """Аутентификация пользователя"""
         user = next((user for user in users if user.login == login), None)
         if user and AuthService.check_password(password, user.hashed_password):

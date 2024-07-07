@@ -23,13 +23,13 @@ def test_registration_existing_user(user_data):
 
 def test_authentication(user_data):
     auth_service.registration(**user_data)
-    jwt = auth_service.authenticate(**user_data)
+    jwt = auth_service.authentication(**user_data)
     assert jwt is not None
 
 
 def test_wrong_authentication(user_data, wrong_user_data):
     auth_service.registration(**user_data)
-    jwt = auth_service.authenticate(**wrong_user_data)
+    jwt = auth_service.authentication(**wrong_user_data)
     assert jwt is None
 
 
