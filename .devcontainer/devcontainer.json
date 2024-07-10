@@ -38,7 +38,9 @@
     },
     "mounts": [
         "source=auth-service,target=/commandhistory,type=volume",
-        "source=${env:HOME}${env:USERPROFILE}/.kube,target=/usr/local/share/kube-localhost,type=bind"
+        "source=${env:HOME}${env:USERPROFILE}/.kube,target=/usr/local/share/kube-localhost,type=bind",
+        "source=${localEnv:HOME}/.ssh/id_rsa,target=/root/.ssh/id_rsa,type=bind,consistency=cached,readonly=true",
+        "source=${localEnv:HOME}/.ssh/id_rsa.pub,target=/root/.ssh/id_rsa.pub,type=bind,consistency=cached,readonly=true"
     ],
     "remoteUser": "root"
 }
