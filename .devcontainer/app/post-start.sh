@@ -1,6 +1,8 @@
 #!/bin/sh
 apt list --installed
 
+git config --global --add safe.directory /workspace
+
 # Конфигурация темы oh-my-zsh
 if [ ! -d "~/.oh-my-zsh/custom/themes/powerlevel10k" ] ; then
     git clone --depth 1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
