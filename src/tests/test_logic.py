@@ -55,7 +55,7 @@ def test_decode_jwt_expired_token(expired_payload):
     )
     with pytest.raises(jwt.ExpiredSignatureError) as excinfo:
         AuthService.decode_jwt_token(expired_token)
-        assert str(excinfo.value) == TOKEN_EXPIRED_MESSAGE
+    assert str(excinfo.value) == TOKEN_EXPIRED_MESSAGE
 
 
 def test_decode_jwt_invalid_token(id_for_payload):
@@ -64,4 +64,4 @@ def test_decode_jwt_invalid_token(id_for_payload):
     invalid_token = ''.join([token[:-5], '12345'])
     with pytest.raises(jwt.InvalidTokenError) as excinfo:
         AuthService.decode_jwt_token(invalid_token)
-        assert str(excinfo.value) == INVALID_TOKEN_MESSAGE
+    assert str(excinfo.value) == INVALID_TOKEN_MESSAGE
