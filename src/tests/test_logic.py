@@ -61,7 +61,7 @@ def test_decode_jwt_expired_token(expired_payload):
 def test_decode_jwt_invalid_token(id_for_payload):
     """Тест декодирования некорректного токена."""
     token = AuthService.generate_jwt_token(id_for_payload)
-    invalid_token = ''.join({token[:-5]}, '12345')
+    invalid_token = ''.join([token[:-5], '12345'])
     with pytest.raises(jwt.InvalidTokenError) as excinfo:
         AuthService.decode_jwt_token(invalid_token)
         assert str(excinfo.value) == INVALID_TOKEN_MESSAGE
