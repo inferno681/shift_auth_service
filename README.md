@@ -20,7 +20,22 @@ pip install poetry
 
 ```bash
 poetry install
-
 ```
 
+</details>
+<details><summary><h1>Инструкция по запуску линтера</h1></summary>
+Для установки виртуального окружения с помощью Poetry нужно установить его через pip:
+```bash
+pip install poetry
+```
+Для установки зависимостей выполните команду:
+
+```bash
+poetry install
+```
+Для запуска линтера выполните команду:
+
+```bash
+flake8 src/
+```
 </details>

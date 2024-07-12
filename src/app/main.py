@@ -6,50 +6,63 @@ import bcrypt
 import jwt
 
 from app.config import config
-from app.constants import *
+from app.constants import (
+    ENCODING_FORMAT,
+    INVALID_TOKEN_MESSAGE,
+    TOKEN_EXPIRED_MESSAGE,
+    USER_EXISTS_MESSAGE,
+)
 
 users = []  # type: ignore
 
 
+def generate_id():
+    """Генератор уникальных ID, начиная с 1."""
+    return next(count(1))
+
+
 @dataclass
 class User:
-    """Класс пользователя"""
+    """Класс пользователя."""
 
-    id: int = field(default_factory=count(1).__next__, init=False)
+    id: int = field(default_factory=generate_id, init=False)
     login: str
     hashed_password: str
-    JWT: str = ""
+    jwt: str = ''
 
 
 class AuthService:
+    """Сервис авторизации."""
+
     @staticmethod
     def hash_password(password: str) -> str:
-        """Хэширование пароля"""
+        """Хэширование пароля."""
         salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
-        return hashed_password.decode("utf-8")
+        hashed_password = bcrypt.hashpw(password.encode(ENCODING_FORMAT), salt)
+        return hashed_password.decode(ENCODING_FORMAT)
 
     @staticmethod
     def check_password(password: str, hashed_password: str) -> bool:
-        """Проверка пароля"""
+        """Проверка пароля."""
         return bcrypt.checkpw(
-            password.encode("utf-8"), hashed_password.encode("utf-8")
+            password.encode(ENCODING_FORMAT),
+            hashed_password.encode(ENCODING_FORMAT),
         )
 
     @staticmethod
     def registration(login, password):
-        """Регистрация пользователя"""
+        """Регистрация пользователя."""
         if next((user for user in users if user.login == login), None):
-            return USER_EXISTS.format(login=login)
+            return USER_EXISTS_MESSAGE.format(login=login)
         hashed_password = AuthService.hash_password(password)
         user = User(login=login, hashed_password=hashed_password)
-        user.JWT = AuthService.generate_jwt_token(user.id)
+        user.jwt = AuthService.generate_jwt_token(user.id)
         users.append(user)
-        return user.JWT
+        return user.jwt
 
     @staticmethod
     def authentication(login: str, password: str) -> str | None:
-        """Аутентификация пользователя"""
+        """Аутентификация пользователя."""
         user = next((user for user in users if user.login == login), None)
         if user and AuthService.check_password(password, user.hashed_password):
             user.JWT = AuthService.generate_jwt_token(user.id)
@@ -57,26 +70,28 @@ class AuthService:
         return None
 
     @staticmethod
-    def generate_jwt_token(id: int) -> str:
-        """Генерация JWT токена"""
+    def generate_jwt_token(user_id: int) -> str:
+        """Генерация JWT токена."""
         payload = {
-            "id": id,
-            "exp": (datetime.now() + timedelta(days=1)).timestamp(),
+            'id': user_id,
+            'exp': (datetime.now() + timedelta(days=1)).timestamp(),
         }
-        token = jwt.encode(
-            payload, config.SECRET.get_secret_value(), algorithm="HS256"
+        return jwt.encode(
+            payload,
+            config.SECRET.get_secret_value(),
+            algorithm='HS256',
         )
-        return token
 
     @staticmethod
     def decode_jwt_token(token: str) -> dict:
-        """Декодирование JWT токена"""
+        """Декодирование JWT токена."""
         try:
-            payload = jwt.decode(
-                token, config.SECRET.get_secret_value(), algorithms=["HS256"]
+            return jwt.decode(
+                token,
+                config.SECRET.get_secret_value(),
+                algorithms=['HS256'],
             )
-            return payload
         except jwt.ExpiredSignatureError:
-            raise jwt.ExpiredSignatureError(TOKEN_EXPIRED)
+            raise jwt.ExpiredSignatureError(TOKEN_EXPIRED_MESSAGE)
         except jwt.InvalidTokenError:
-            raise jwt.InvalidTokenError(INVALID_TOKEN)
+            raise jwt.InvalidTokenError(INVALID_TOKEN_MESSAGE)
