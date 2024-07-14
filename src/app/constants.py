@@ -1,5 +1,6 @@
-"""Сообщения об ошибках"""
+"""Сообщения об ошибках."""
 
-INVALID_TOKEN = "Недействительный токен"
-USER_EXISTS = "Пользователь {login} уже существует"
-TOKEN_EXPIRED = "Срок действия токена истек"
+ENCODING_FORMAT = 'utf-8'
+INVALID_TOKEN_MESSAGE = 'Недействительный токен'  # noqa: S105
+TOKEN_EXPIRED_MESSAGE = 'Срок действия токена истек'  # noqa: S105
+USER_EXISTS_MESSAGE = 'Пользователь {login} уже существует'
