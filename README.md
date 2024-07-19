@@ -1,6 +1,3 @@
-[https://hub.mos.ru/shift-python/y2024/homeworks/vstakrotskij/auth_service/badges/main/coverage.svg](https://hub.mos.ru/shift-python/y2024/homeworks/vstakrotskij/auth_service/badges/main/coverage.svg)
-[https://hub.mos.ru/shift-python/y2024/homeworks/vstakrotskij/auth_service/badges/main/coverage.svg](https://hub.mos.ru/shift-python/y2024/homeworks/vstakrotskij/auth_service/badges/main/pipeline.svg)
-
 # Auth service
 
 Cервис авторизации.
