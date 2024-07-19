@@ -1,41 +1,20 @@
+[https://hub.mos.ru/shift-python/y2024/homeworks/vstakrotskij/auth_service/badges/main/coverage.svg](https://hub.mos.ru/shift-python/y2024/homeworks/vstakrotskij/auth_service/badges/main/coverage.svg)
+[https://hub.mos.ru/shift-python/y2024/homeworks/vstakrotskij/auth_service/badges/main/coverage.svg](https://hub.mos.ru/shift-python/y2024/homeworks/vstakrotskij/auth_service/badges/main/pipeline.svg)
+
 # Auth service
 
 Cервис авторизации.
 
-<details><summary><h1>Инструкция по установке</h1></summary>
+## Реализованы следующие возможности
 
-Клонируйте репозиторий и перейдите в него.
-```bash
-git clone git@hub.mos.ru:shift-python/y2024/homeworks/vstakrotskij/auth_service.git
-```
-Создайте файл .env, в корневой папке проекта, с переменными окружения.
-```
-SECRET = (секрет для создания токена)
-```
-Для установки виртуального окружения с помощью Poetry нужно установить его через pip:
-```bash
-pip install poetry
-```
-Для установки зависимостей выполните команду:
+### Регистрация
 
-```bash
-poetry install
-```
+На основе логина, пароля создает в хранилище запись о новом пользователе. В качестве ответа возвращает JWT-токен.
 
-</details>
-<details><summary><h1>Инструкция по запуску линтера</h1></summary>
-Для установки виртуального окружения с помощью Poetry нужно установить его через pip:
-```bash
-pip install poetry
-```
-Для установки зависимостей выполните команду:
+### Авторизация
 
-```bash
-poetry install
-```
-Для запуска линтера выполните команду:
-
-```bash
-flake8 src/
-```
-</details>
+На основе логина и пароля проверяет наличие пользователя в хранилище. Затем:
+если JWT-токена нет в хранилище, то создает его и сохраняет в хранилище;
+если JWT-токен есть в хранилище, обновляет его.
+В качестве ответа возвращает JWT-токен.
+если входящие данные некорректны возвращает None

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.main import users
+from app.service import users
 
 
 @pytest.fixture(autouse=True)
