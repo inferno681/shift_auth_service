@@ -39,7 +39,7 @@
         }
     },
     "mounts": [
-        "source=auth-service,target=/commandhistory,type=volume",
+        "source=auth_service_stakrotckii,target=/commandhistory,type=volume",
         "source=${env:HOME}${env:USERPROFILE}/.kube,target=/usr/local/share/kube-localhost,type=bind",
         "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached,readonly"
     ],

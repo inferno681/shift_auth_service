@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: 'auth-service'
+    container_name: 'auth_service_stakrotckii'
     build:
       context: app/
       dockerfile: Dockerfile
