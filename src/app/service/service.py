@@ -14,18 +14,14 @@ from app.constants import (
 )
 
 users = []  # type: ignore
-
-
-def generate_id():
-    """Генератор уникальных ID, начиная с 1."""
-    return next(count(1))
+_id_counter = count(1)
 
 
 @dataclass
 class User:
     """Класс пользователя."""
 
-    id: int = field(default_factory=generate_id, init=False)
+    id: int = field(default_factory=lambda: next(_id_counter), init=False)
     login: str
     hashed_password: str
     jwt: str = ''
