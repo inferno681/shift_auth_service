@@ -24,7 +24,7 @@ class User:
     id: int = field(default_factory=lambda: next(_id_counter), init=False)
     login: str
     hashed_password: str
-    jwt: str = ''
+    token: str = ''
 
 
 class AuthService:
@@ -52,17 +52,17 @@ class AuthService:
             return USER_EXISTS_MESSAGE.format(login=login)
         hashed_password = AuthService.hash_password(password)
         user = User(login=login, hashed_password=hashed_password)
-        user.jwt = AuthService.generate_jwt_token(user.id)
+        user.token = AuthService.generate_jwt_token(user.id)
         users.append(user)
-        return user.jwt
+        return user.token
 
     @staticmethod
     def authentication(login: str, password: str) -> str | None:
         """Аутентификация пользователя."""
         user = next((user for user in users if user.login == login), None)
         if user and AuthService.check_password(password, user.hashed_password):
-            user.JWT = AuthService.generate_jwt_token(user.id)
-            return user.JWT
+            user.token = AuthService.generate_jwt_token(user.id)
+            return user.token
         return None
 
     @staticmethod
@@ -91,3 +91,12 @@ class AuthService:
             raise jwt.ExpiredSignatureError(TOKEN_EXPIRED_MESSAGE)
         except jwt.InvalidTokenError:
             raise jwt.InvalidTokenError(INVALID_TOKEN_MESSAGE)
+
+    @staticmethod
+    def check_token(token: str):
+        """Проверка токена."""
+        user_id = AuthService.decode_jwt_token(token)['id']
+        user = next((user for user in users if user.id == user_id), None)
+        if not user:
+            return False
+        return user.token == token

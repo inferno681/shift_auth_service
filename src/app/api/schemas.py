@@ -17,7 +17,13 @@ class UserCreate(BaseModel):
     )
 
 
-class Userjwt(BaseModel):
+class UserToken(BaseModel):
     """Схема отдачи токена."""
 
-    jwt: str | None = None
+    token: str | None = None
+
+
+class UserTokenCheck(BaseModel):
+    """Схема проверки токена."""
+
+    is_token_valid: bool
