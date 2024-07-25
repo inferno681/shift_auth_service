@@ -19,6 +19,12 @@ def user_data():
     return {'login': 'user', 'password': 'password'}
 
 
+@pytest.fixture()
+def second_user_data():
+    """Фикстура с данными пользователя."""
+    return {'login': 'user2', 'password': 'password'}
+
+
 @pytest.fixture(
     params=(
         {'login': 'user', 'password': 'wrongpassword'},

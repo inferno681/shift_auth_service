@@ -5,13 +5,14 @@ from itertools import count
 import bcrypt
 import jwt
 
-from app.config import config
 from app.constants import (
     ENCODING_FORMAT,
     INVALID_TOKEN_MESSAGE,
     TOKEN_EXPIRED_MESSAGE,
     USER_EXISTS_MESSAGE,
 )
+from app.service.exceptions import UserExistsError
+from config import config
 
 users = []  # type: ignore
 _id_counter = count(1)
@@ -49,7 +50,7 @@ class AuthService:
     def registration(login, password):
         """Регистрация пользователя."""
         if next((user for user in users if user.login == login), None):
-            return USER_EXISTS_MESSAGE.format(login=login)
+            raise UserExistsError(USER_EXISTS_MESSAGE.format(login=login))
         hashed_password = AuthService.hash_password(password)
         user = User(login=login, hashed_password=hashed_password)
         user.token = AuthService.generate_jwt_token(user.id)
@@ -93,7 +94,7 @@ class AuthService:
             raise jwt.InvalidTokenError(INVALID_TOKEN_MESSAGE)
 
     @staticmethod
-    def check_token(token: str):
+    def check_token(token: str) -> bool:
         """Проверка токена."""
         user_id = AuthService.decode_jwt_token(token)['id']
         user = next((user for user in users if user.id == user_id), None)

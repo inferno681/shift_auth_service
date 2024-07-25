@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Request, status
 from jwt import ExpiredSignatureError, InvalidTokenError
 
 from app.api import router
-from app.constants import INVALID_TOKEN_MESSAGE, TOKEN_EXPIRED_MESSAGE
+from app.service.exceptions import UserExistsError
 
 app = FastAPI()
 
@@ -18,7 +18,7 @@ async def expired_signature_error_handler(
     """Глобальный обработчик исключений для ExpiredSignatureError."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=TOKEN_EXPIRED_MESSAGE,
+        detail=str(exc),
     )
 
 
@@ -30,7 +30,19 @@ async def invalid_token_error_handler(
     """Глобальный обработчик исключений для InvalidTokenError."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=INVALID_TOKEN_MESSAGE,
+        detail=str(exc),
+    )
+
+
+@app.exception_handler(UserExistsError)
+async def invalid_username_error_handler(
+    request: Request,
+    exc: UserExistsError,
+):
+    """Глобальный обработчик исключений для UserExistsError."""
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=str(exc),
     )
 
 

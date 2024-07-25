@@ -1,6 +1,11 @@
 from fastapi import APIRouter
 
-from app.api.schemas import UserCreate, UserToken, UserTokenCheck
+from app.api.schemas import (
+    UserCreate,
+    UserToken,
+    UserTokenCheck,
+    UserTokenCheckRequest,
+)
 from app.service import AuthService
 
 router = APIRouter()
@@ -29,6 +34,6 @@ async def authentication(user: UserCreate):
 
 
 @router.post('/check_token', response_model=UserTokenCheck)
-async def check_token(token: UserToken):
+async def check_token(token: UserTokenCheckRequest):
     """Эндпоинт аутентификации пользователя."""
-    return UserTokenCheck(is_token_valid=AuthService.check_token(token))
+    return UserTokenCheck(is_token_valid=AuthService.check_token(token.token))

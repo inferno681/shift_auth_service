@@ -1,13 +1,14 @@
 import jwt
 import pytest
 
-from app.config import config
 from app.constants import (
     INVALID_TOKEN_MESSAGE,
     TOKEN_EXPIRED_MESSAGE,
     USER_EXISTS_MESSAGE,
 )
 from app.service import AuthService, users
+from app.service.exceptions import UserExistsError
+from config import config
 
 auth_service = AuthService()
 
@@ -22,8 +23,11 @@ def test_registration(user_data):
 def test_registration_existing_user(user_data):
     """Тест регистрации уже существующего пользователя."""
     auth_service.registration(**user_data)
-    response = auth_service.registration(**user_data)
-    assert response == USER_EXISTS_MESSAGE.format(login=user_data['login'])
+    with pytest.raises(UserExistsError) as excinfo:
+        auth_service.registration(**user_data)
+    assert str(excinfo.value) == USER_EXISTS_MESSAGE.format(
+        login=user_data['login'],
+    )
 
 
 def test_authentication(user_data):
@@ -65,3 +69,15 @@ def test_decode_jwt_invalid_token(id_for_payload):
     with pytest.raises(jwt.InvalidTokenError) as excinfo:
         AuthService.decode_jwt_token(invalid_token)
     assert str(excinfo.value) == INVALID_TOKEN_MESSAGE
+
+
+def test_check_token(user_data):
+    """Тест проверки токена."""
+    token = auth_service.registration(**user_data)
+    assert auth_service.check_token(token) is True
+
+
+def test_check_no_user_token(id_for_payload):
+    """Тест проверки токена несуществующего пользователя."""
+    token = AuthService.generate_jwt_token(id_for_payload)
+    assert auth_service.check_token(token) is False

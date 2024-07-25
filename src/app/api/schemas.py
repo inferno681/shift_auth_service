@@ -8,7 +8,7 @@ class UserCreate(BaseModel):
         description='Логин',
         min_length=3,
         max_length=20,  # noqa:WPS432
-        pattern='^[a-zA-Z0-9]+$',
+        pattern='^[a-zA-Z0-9._-]+$',
     )
     password: str = Field(
         description='Пароль',
@@ -27,3 +27,9 @@ class UserTokenCheck(BaseModel):
     """Схема проверки токена."""
 
     is_token_valid: bool
+
+
+class UserTokenCheckRequest(BaseModel):
+    """Схема передачи токена для проверки."""
+
+    token: str
