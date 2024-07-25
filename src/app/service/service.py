@@ -5,6 +5,7 @@ from itertools import count
 import bcrypt
 import jwt
 
+from app.api.schemas import UserTokenCheck
 from app.constants import (
     ENCODING_FORMAT,
     INVALID_TOKEN_MESSAGE,
@@ -75,7 +76,7 @@ class AuthService:
         }
         return jwt.encode(
             payload,
-            config.SECRET.get_secret_value(),
+            config.SECRET.get_secret_value(),  # type: ignore
             algorithm='HS256',
         )
 
@@ -85,7 +86,7 @@ class AuthService:
         try:
             return jwt.decode(
                 token,
-                config.SECRET.get_secret_value(),
+                config.SECRET.get_secret_value(),  # type: ignore
                 algorithms=['HS256'],
             )
         except jwt.ExpiredSignatureError:
@@ -94,10 +95,16 @@ class AuthService:
             raise jwt.InvalidTokenError(INVALID_TOKEN_MESSAGE)
 
     @staticmethod
-    def check_token(token: str) -> bool:
+    def check_token(token: str) -> UserTokenCheck:
         """Проверка токена."""
-        user_id = AuthService.decode_jwt_token(token)['id']
+        response = UserTokenCheck(user_id=None, is_token_valid=False)
+        try:
+            user_id = AuthService.decode_jwt_token(token)['id']
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return response
         user = next((user for user in users if user.id == user_id), None)
         if not user:
-            return False
-        return user.token == token
+            return response
+        response.user_id = user_id
+        response.is_token_valid = user.token == token
+        return response

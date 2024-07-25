@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PositiveInt
 
 
 class UserCreate(BaseModel):
@@ -26,6 +26,7 @@ class UserToken(BaseModel):
 class UserTokenCheck(BaseModel):
     """Схема проверки токена."""
 
+    user_id: PositiveInt | None = None
     is_token_valid: bool
 
 

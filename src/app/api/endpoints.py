@@ -36,4 +36,4 @@ async def authentication(user: UserCreate):
 @router.post('/check_token', response_model=UserTokenCheck)
 async def check_token(token: UserTokenCheckRequest):
     """Эндпоинт аутентификации пользователя."""
-    return UserTokenCheck(is_token_valid=AuthService.check_token(token.token))
+    return AuthService.check_token(token.token)

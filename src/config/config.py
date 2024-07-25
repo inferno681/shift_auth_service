@@ -1,15 +1,54 @@
+from pathlib import Path
+
+import yaml
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class _SettingsModel(BaseSettings):
+
+    @classmethod
+    def from_yaml(cls, config_path: str) -> '_SettingsModel':
+        return cls(**yaml.safe_load(Path(config_path).read_text()))
+
+    model_config = SettingsConfigDict(
+        case_sensitive=False,
+        env_prefix='EMP_',
+        env_nested_delimiter='__',
+    )
+
+    @classmethod
+    def customise_sources(
+        cls,
+        init_settings,
+        env_settings,
+        file_secret_settings,
+    ):
+        """Определяем приоритет использования переменных."""
+        return init_settings, env_settings, file_secret_settings
+
+
+class _ServiceSettings(_SettingsModel):
+    host: str
+    port: int
+    debug: bool
+
+
+class _SettingsSecret(BaseSettings):
     """Базовый класс настроек."""
 
     SECRET: SecretStr = SecretStr('default_secret')
 
     model_config = SettingsConfigDict(
-        env_file='.env', env_file_encoding='utf-8',
+        env_file='.env',
+        env_file_encoding='utf-8',
     )
 
 
-config = Settings()
+class Settings(_SettingsModel, _SettingsSecret):
+    """Настройки сервиса."""
+
+    service: _ServiceSettings
+
+
+config = Settings.from_yaml('./src/config/config.yaml')
