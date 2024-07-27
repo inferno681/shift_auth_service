@@ -102,9 +102,15 @@ class AuthService:
             user_id = AuthService.decode_jwt_token(token)['id']
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
             return response
-        user = next((user for user in users if user.id == user_id), None)
-        if not user:
-            return response
-        response.user_id = user_id
-        response.is_token_valid = user.token == token
+        user = next(
+            (
+                user
+                for user in users
+                if user.id == user_id and user.token == token
+            ),
+            None,
+        )
+        if user:
+            response.user_id = user_id
+            response.is_token_valid = True
         return response
