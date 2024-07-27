@@ -5,7 +5,7 @@ from itertools import count
 import bcrypt
 import jwt
 
-from app.api.schemas import UserTokenCheck
+from app.api.schemes import UserTokenCheck
 from app.constants import (
     ENCODING_FORMAT,
     INVALID_TOKEN_MESSAGE,
