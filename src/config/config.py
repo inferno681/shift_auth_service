@@ -9,7 +9,9 @@ class _SettingsModel(BaseSettings):
 
     @classmethod
     def from_yaml(cls, config_path: str) -> '_SettingsModel':
-        return cls(**yaml.safe_load(Path(config_path).read_text()))
+        return cls(
+            **yaml.safe_load(Path(config_path).read_text(encoding='utf-8')),
+        )
 
     model_config = SettingsConfigDict(
         case_sensitive=False,
@@ -29,9 +31,13 @@ class _SettingsModel(BaseSettings):
 
 
 class _ServiceSettings(_SettingsModel):
+    title: str
+    description: str
     host: str
     port: int
     debug: bool
+    tags_metadata_auth: dict[str, str]
+    tags_metadata_check: dict[str, str]
 
 
 class _SettingsSecret(BaseSettings):

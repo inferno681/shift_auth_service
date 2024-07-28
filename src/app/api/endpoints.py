@@ -8,10 +8,11 @@ from app.api.schemes import (
 )
 from app.service import AuthService
 
-router = APIRouter()
+router_auth = APIRouter()
+router_check = APIRouter()
 
 
-@router.post('/registration', response_model=UserToken)
+@router_auth.post('/registration', response_model=UserToken)
 async def registration(user: UserCreate):
     """Эндпоинт регистрации пользователя."""
     return UserToken(
@@ -22,7 +23,7 @@ async def registration(user: UserCreate):
     )
 
 
-@router.post('/auth', response_model=UserToken)
+@router_auth.post('/auth', response_model=UserToken)
 async def authentication(user: UserCreate):
     """Эндпоинт аутентификации пользователя."""
     return UserToken(
@@ -33,7 +34,7 @@ async def authentication(user: UserCreate):
     )
 
 
-@router.post('/check_token', response_model=UserTokenCheck)
+@router_check.post('/check_token', response_model=UserTokenCheck)
 async def check_token(token: UserTokenCheckRequest):
     """Эндпоинт проверки токена пользователя."""
     return AuthService.check_token(token.token)

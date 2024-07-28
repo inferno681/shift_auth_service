@@ -24,7 +24,7 @@ async def client():
     """Фикстура клиента."""
     async with AsyncClient(
         transport=ASGITransport(app=app),
-        base_url='http://127.0.0.1:8000/',
+        base_url='http://127.0.0.1:8000/api/',
     ) as client:
         yield client
 

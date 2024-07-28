@@ -1,4 +1,12 @@
 service:
+  title: "Auth service"
+  description: "Сервис авторизации"
   host: "localhost"
-  port: 8000
+  port: 8001
   debug: True
+  tags_metadata_auth:
+    name: "Auth"
+    description: "Регистрация, аутентификация"
+  tags_metadata_check:
+    name: "Check"
+    description: "Проверка токена"
