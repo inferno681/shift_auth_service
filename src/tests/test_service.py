@@ -7,7 +7,7 @@ from app.constants import (
     TOKEN_EXPIRED_MESSAGE,
     USER_EXISTS_MESSAGE,
 )
-from app.main import AuthService, users
+from app.service import AuthService, users
 
 auth_service = AuthService()
 
