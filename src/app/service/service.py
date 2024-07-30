@@ -16,6 +16,7 @@ from app.service.exceptions import UserExistsError
 from config import config
 
 users = []  # type: ignore
+tokens = []
 _id_counter = count(1)
 
 
@@ -26,7 +27,46 @@ class User:
     id: int = field(default_factory=lambda: next(_id_counter), init=False)
     login: str
     hashed_password: str
-    token: str = ''
+
+
+@dataclass
+class Token:
+    """Сущность для хранения токена."""
+
+    user_id: int
+    token: str
+
+
+class TokenService:
+    @staticmethod
+    def is_token_exists(user_id: int) -> str | None:
+        return next(
+            (token for token in tokens if token.user_id == user_id),
+            None,
+        )
+
+    @staticmethod
+    def create_and_put_token(user_id: int) -> str:
+        token = Token(
+            user_id=user_id,
+            token=AuthService.generate_jwt_token(user_id),
+        )
+        return token.token
+
+    @staticmethod
+    def is_token_expired(token: str):
+        try:
+            AuthService.decode_jwt_token(token)
+        except jwt.ExpiredSignatureError:
+            return False
+        return True
+    @staticmethod
+    def update_token(user_id) -> str:
+        token = next(
+            (token for token in tokens if token.user_id == user_id),
+            None,
+        )
+        token.token = AuthService.generate_jwt_token(user_id)
 
 
 class AuthService:
@@ -54,18 +94,30 @@ class AuthService:
             raise UserExistsError(USER_EXISTS_MESSAGE.format(login=login))
         hashed_password = AuthService.hash_password(password)
         user = User(login=login, hashed_password=hashed_password)
-        user.token = AuthService.generate_jwt_token(user.id)
         users.append(user)
-        return user.token
+        token = AuthService.generate_jwt_token(user.id)
+
+        tokens.append(user)
+        return token
+
+    @staticmethod
+    def is_user_exists(login: str, password: str) -> int | None:
+        user = next((user for user in users if user.login == login), None)
+        if user and AuthService.check_password(password, user.hashed_password):
+            return user.id
+        return None
 
     @staticmethod
     def authentication(login: str, password: str) -> str | None:
         """Аутентификация пользователя."""
-        user = next((user for user in users if user.login == login), None)
-        if user and AuthService.check_password(password, user.hashed_password):
-            user.token = AuthService.generate_jwt_token(user.id)
-            return user.token
-        return None
+        user_id = AuthService.is_user_exists(login, password)
+        if not user_id:
+            raise Exception
+        token = TokenService.is_token_exists(user_id)
+        if not token:
+            return TokenService.create_and_put_token(user_id)
+        if TokenService.is_token_expired(token):
+
 
     @staticmethod
     def generate_jwt_token(user_id: int) -> str:
