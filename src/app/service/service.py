@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from decimal import Decimal
 from itertools import count
 
 import bcrypt
@@ -7,6 +8,7 @@ import jwt
 
 from app.api.schemes import UserTokenCheck
 from app.constants import (
+    DEFAULT_BALANCE,
     ENCODING_FORMAT,
     INVALID_TOKEN_MESSAGE,
     TOKEN_EXPIRED_MESSAGE,
@@ -27,6 +29,8 @@ class User:
     id: int = field(default_factory=lambda: next(_id_counter), init=False)
     login: str
     hashed_password: str
+    balance: Decimal = field(init=False, default=Decimal(DEFAULT_BALANCE))
+    is_verified: bool = field(init=False, default=False)
 
 
 @dataclass
