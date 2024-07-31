@@ -2,15 +2,17 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.service import users
+from app.service import tokens, users
 
 
 @pytest.fixture(autouse=True)
 def user_storage():
     """Фикстура для очистки хранилища перед каждым текстом."""
     users.clear()
+    tokens.clear()
     yield
     users.clear()
+    tokens.clear()
 
 
 @pytest.fixture()
