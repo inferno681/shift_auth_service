@@ -5,6 +5,7 @@ from itertools import count
 
 import bcrypt
 import jwt
+from fastapi import HTTPException, status
 
 from app.api.schemes import UserTokenCheck
 from app.constants import (
@@ -12,9 +13,10 @@ from app.constants import (
     ENCODING_FORMAT,
     INVALID_TOKEN_MESSAGE,
     TOKEN_EXPIRED_MESSAGE,
+    TOKEN_NOT_FOUND,
     USER_EXISTS_MESSAGE,
+    USER_NOT_FOUND,
 )
-from app.service.exceptions import UserExistsError
 from config import config
 
 users = []  # type: ignore
@@ -47,10 +49,16 @@ class TokenService:
     @staticmethod
     def get_token(user_id: int) -> str | None:
         """Проверка наличия токена пользователя."""
-        return next(
+        token = next(
             (token.token for token in tokens if token.user_id == user_id),
             None,
         )
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=TOKEN_NOT_FOUND,
+            )
+        return token
 
     @staticmethod
     def create_and_put_token(user_id: int) -> str:
@@ -84,8 +92,11 @@ class TokenService:
         response = UserTokenCheck(user_id=None, is_token_valid=False)
         try:
             user_id = AuthService.decode_jwt_token(token)['id']
-        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-            return response
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as exeption:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=exeption,
+            )
         if user_id and token == TokenService.get_token(user_id):
             response.user_id = user_id
             response.is_token_valid = True
@@ -141,7 +152,10 @@ class AuthService(TokenService):
     def registration(login, password):
         """Регистрация пользователя."""
         if next((user for user in users if user.login == login), None):
-            raise UserExistsError(USER_EXISTS_MESSAGE.format(login=login))
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=USER_EXISTS_MESSAGE.format(login=login),
+            )
         hashed_password = AuthService.hash_password(password)
         user = User(login=login, hashed_password=hashed_password)
         users.append(user)
@@ -155,7 +169,10 @@ class AuthService(TokenService):
         user = next((user for user in users if user.login == login), None)
         if user and AuthService.check_password(password, user.hashed_password):
             return user.id
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=USER_NOT_FOUND,
+        )
 
     @staticmethod
     def authentication(login: str, password: str) -> str | None:

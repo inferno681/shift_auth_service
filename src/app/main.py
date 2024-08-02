@@ -1,8 +1,7 @@
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI
 
 from app.api import router_auth, router_check
-from app.service.exceptions import UserExistsError
 from config import config
 
 tags_metadata = [
@@ -26,18 +25,6 @@ app.include_router(
     prefix='/api',
     tags=[config.service.tags_metadata_check['name']],  # type: ignore
 )
-
-
-@app.exception_handler(UserExistsError)
-async def invalid_username_error_handler(
-    request: Request,
-    exc: UserExistsError,
-):
-    """Глобальный обработчик исключений для UserExistsError."""
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail=str(exc),
-    )
 
 
 if __name__ == '__main__':
