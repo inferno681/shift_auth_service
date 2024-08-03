@@ -1,6 +1,6 @@
 import pytest
 
-from app.constants import USER_EXISTS_MESSAGE
+from app.constants import USER_EXISTS_MESSAGE, USER_NOT_FOUND
 
 
 @pytest.mark.anyio
@@ -48,8 +48,8 @@ async def test_wrong_login(
     """Тест аутентификации пользователя с некорректными данными."""
     await client.post(registration_link, json=test_user)
     response = await client.post(auth_link, json=wrong_user_data)
-    assert response.status_code == 200
-    assert response.json()['token'] is None
+    assert response.status_code == 404
+    assert response.json()['detail'] == USER_NOT_FOUND
 
 
 @pytest.mark.anyio
