@@ -95,7 +95,7 @@ class TokenService:
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as exeption:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=exeption,
+                detail=str(exeption),
             )
         if user_id and token == TokenService.get_token(user_id):
             response.user_id = user_id
