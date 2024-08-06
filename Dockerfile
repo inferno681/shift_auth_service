@@ -10,10 +10,8 @@ RUN poetry config virtualenvs.create false
 
 RUN poetry install --only main --no-interaction --no-ansi
 
-COPY ./src/app  ./app
+COPY ./src  ./src
 
-COPY ./src/config  ./config
+ENV PYTHONPATH=/app/src/
 
-ENV PYTHONPATH=/app
-
-CMD ["python", "app/main.py"]
+CMD ["python", "src/app/main.py"]
