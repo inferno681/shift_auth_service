@@ -8,10 +8,12 @@ COPY pyproject.toml poetry.lock* /app/
 
 RUN poetry config virtualenvs.create false
 
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --only main --no-interaction --no-ansi
 
-COPY .  .
+COPY ./src/app  ./app
 
-ENV PYTHONPATH=/app/src
+COPY ./src/config  ./config
 
-CMD ["python", "src/app/main.py"]
+ENV PYTHONPATH=/app
+
+CMD ["python", "app/main.py"]
