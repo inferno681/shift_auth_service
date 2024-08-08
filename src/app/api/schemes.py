@@ -34,3 +34,9 @@ class UserTokenCheckRequest(BaseModel):
     """Схема передачи токена для проверки."""
 
     token: str
+
+
+class IsReady(BaseModel):
+    """Схема ответа health check."""
+
+    is_ready: bool

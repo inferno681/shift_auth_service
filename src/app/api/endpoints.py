@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.schemes import (
+    IsReady,
     UserCreate,
     UserToken,
     UserTokenCheck,
@@ -10,6 +11,7 @@ from app.service import AuthService
 
 router_auth = APIRouter()
 router_check = APIRouter()
+router_healthz = APIRouter()
 
 
 @router_auth.post('/registration', response_model=UserToken)
@@ -38,3 +40,9 @@ async def authentication(user: UserCreate):
 async def check_token(token: UserTokenCheckRequest):
     """Эндпоинт проверки токена пользователя."""
     return AuthService.check_token(token.token)
+
+
+@router_healthz.get('/healthz/ready', response_model=IsReady)
+async def check_health():
+    """Эндпоинт проверки запущен ли сервис."""
+    return IsReady(is_ready=True)

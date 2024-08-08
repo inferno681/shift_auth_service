@@ -10,3 +10,6 @@ service:
   tags_metadata_check:
     name: "Check"
     description: "Проверка токена"
+  tags_metadata_health:
+    name: "Health"
+    description: "Проверка доступности сервиса"
