@@ -36,9 +36,15 @@ class _ServiceSettings(_SettingsModel):
     host: str
     port: int
     debug: bool
+    kafka_host: str
+    kafka_port: int
     tags_metadata_auth: dict[str, str]
     tags_metadata_check: dict[str, str]
     tags_metadata_health: dict[str, str]
+    tags_metadata_verify: dict[str, str]
+
+    def kafka_url(self):
+        return f'{self.kafka_host}:{self.kafka_port}'
 
 
 class _SettingsSecret(BaseSettings):

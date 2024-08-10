@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from config import config
 
-from .endpoints import router_auth, router_check, router_healthz
+from .endpoints import router_auth, router_check, router_healthz, router_verify
 
 router = APIRouter()
 router.include_router(
@@ -14,4 +14,8 @@ router.include_router(
 
 router.include_router(
     router_healthz, tags=[config.service.tags_metadata_health['name']]  # type: ignore
+)
+
+router.include_router(
+    router_verify, tags=[config.service.tags_metadata_verify['name']]  # type: ignore
 )

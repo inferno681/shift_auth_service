@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.schemes import (
     IsReady,
+    KafkaResponse,
     UserCreate,
     UserToken,
     UserTokenCheck,
@@ -12,6 +13,7 @@ from app.service import AuthService
 router_auth = APIRouter()
 router_check = APIRouter()
 router_healthz = APIRouter()
+router_verify = APIRouter()
 
 
 @router_auth.post('/registration', response_model=UserToken)
@@ -46,3 +48,9 @@ async def check_token(token: UserTokenCheckRequest):
 async def check_health():
     """Эндпоинт проверки запущен ли сервис."""
     return IsReady(is_ready=True)
+
+
+@router_verify.post('/verify', response_model=KafkaResponse)
+async def verify(message: dict[int, str]):
+    """Эндпоинт для верификации по фото."""
+    return KafkaResponse

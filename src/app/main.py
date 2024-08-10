@@ -1,13 +1,22 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
 
 from app.api import router
 from config import config
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Запуск и остановка продьюсера кафка."""
+
+
 tags_metadata = [
     config.service.tags_metadata_auth,  # type: ignore
     config.service.tags_metadata_check,  # type: ignore
     config.service.tags_metadata_health,  # type: ignore
+    config.service.tags_metadata_verify,  # type: ignore
 ]
 app = FastAPI(
     title=config.service.title,  # type: ignore
