@@ -7,7 +7,7 @@ import bcrypt
 import jwt
 from fastapi import HTTPException, status
 
-from app.api.schemes import UserTokenCheck
+
 from app.constants import (
     DEFAULT_BALANCE,
     ENCODING_FORMAT,
@@ -87,9 +87,9 @@ class TokenService:
         return token.token
 
     @staticmethod
-    def check_token(token: str) -> UserTokenCheck:
+    def check_token(token: str) -> dict:
         """Проверка токена."""
-        response = UserTokenCheck(user_id=None, is_token_valid=False)
+        response = {'user_id': None, 'is_token_valid': False}
         try:
             user_id = AuthService.decode_jwt_token(token)['id']
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as exeption:

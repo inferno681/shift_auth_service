@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-
+from app.service import producer
 import uvicorn
 from fastapi import FastAPI
 
@@ -10,6 +10,10 @@ from config import config
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Запуск и остановка продьюсера кафка."""
+    await producer.start()
+    print('started')
+    yield
+    await producer.stop()
 
 
 tags_metadata = [

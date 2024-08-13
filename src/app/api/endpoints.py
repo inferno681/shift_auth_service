@@ -8,7 +8,7 @@ from app.api.schemes import (
     UserTokenCheck,
     UserTokenCheckRequest,
 )
-from app.service import AuthService
+from app.service import AuthService, producer
 
 router_auth = APIRouter()
 router_check = APIRouter()
@@ -53,4 +53,5 @@ async def check_health():
 @router_verify.post('/verify', response_model=KafkaResponse)
 async def verify(message: dict[int, str]):
     """Эндпоинт для верификации по фото."""
+    await producer.send('faces', 'ass')
     return KafkaResponse
