@@ -15,8 +15,8 @@ log = logging.getLogger('uvicorn')
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Запуск и остановка продьюсера кафка, создание директории для фото."""
-    if not os.path.exists(config.service.photo_directory):
-        os.makedirs(config.service.photo_directory)
+    if not os.path.exists(config.service.photo_directory):  # type: ignore
+        os.makedirs(config.service.photo_directory)  # type: ignore
     await producer.start()
     log.info('kafka producer started')
     yield

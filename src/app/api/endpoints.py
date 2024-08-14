@@ -12,7 +12,7 @@ from app.api.schemes import (
     UserTokenCheck,
     UserTokenCheckRequest,
 )
-from app.constants import UPLOAD_ERROR, WRONG_IMAGE_FORMAT
+from app.constants import FILENAME_ERROR, UPLOAD_ERROR, WRONG_IMAGE_FORMAT
 from app.service import AuthService, producer
 from config import config
 
@@ -59,13 +59,21 @@ async def check_health():
 @router_verify.post('/verify', response_model=KafkaResponse)
 async def verify(user_id: int = Form(gt=0), file: UploadFile = File()):
     """Эндпоинт для загрузки фото."""
+    if file.filename is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=FILENAME_ERROR,
+        )
     file_extension = os.path.splitext(file.filename)[1]
-    if file_extension not in config.service.acceptable_formats:
+    if file_extension not in config.service.acceptable_formats:  # type: ignore
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=WRONG_IMAGE_FORMAT.format(extension=file_extension),
         )
-    file_path = f'{config.service.photo_directory}/{uuid1()}{file_extension}'
+    file_path = (
+        f'{config.service.photo_directory}/'  # type: ignore
+        f'{uuid1()}{file_extension}'
+    )
     try:
         async with aiofiles.open(file_path, 'wb') as photo:
             await photo.write(await file.read())

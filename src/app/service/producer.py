@@ -1,6 +1,6 @@
 import json
 
-from aiokafka import AIOKafkaProducer
+from aiokafka import AIOKafkaProducer  # type: ignore
 
 
 class KafkaProducer:
@@ -30,6 +30,8 @@ class KafkaProducer:
 
     async def send_message(self, topic: str, user_data: dict[int, str]):
         """Метод для отправки сообщения."""
+        if self.producer is None:
+            raise RuntimeError('Producer is not started')
         await self.producer.send_and_wait(
             topic,
             value=user_data,
