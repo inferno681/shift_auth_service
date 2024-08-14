@@ -10,6 +10,8 @@ TOKEN_EXPIRED_MESSAGE = 'Срок действия токена истек'
 USER_EXISTS_MESSAGE = 'Пользователь {login} уже существует'
 USER_NOT_FOUND = 'Пользователь с предоставлеными данными не найден'
 TOKEN_NOT_FOUND = 'Токен отсутствует'
+UPLOAD_ERROR = 'Ошибка при загрузке файла'
+WRONG_IMAGE_FORMAT = 'Недопустимый формат изображения {extension}'
 
 
 """Значения по умолчанию"""

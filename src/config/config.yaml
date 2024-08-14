@@ -6,6 +6,8 @@ service:
   debug: True
   kafka_host: "localhost"
   kafka_port: 9092
+  photo_directory: "./photos"
+  acceptable_formats: [".jpg", ".jpeg", ".png"]
   tags_metadata_auth:
     name: "Auth"
     description: "Регистрация, аутентификация"

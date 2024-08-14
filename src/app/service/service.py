@@ -7,7 +7,6 @@ import bcrypt
 import jwt
 from fastapi import HTTPException, status
 
-
 from app.constants import (
     DEFAULT_BALANCE,
     ENCODING_FORMAT,
@@ -98,8 +97,8 @@ class TokenService:
                 detail=str(exeption),
             )
         if user_id and token == TokenService.get_token(user_id):
-            response.user_id = user_id
-            response.is_token_valid = True
+            response['user_id'] = user_id
+            response['is_token_valid'] = True
         return response
 
     @staticmethod
@@ -186,3 +185,14 @@ class AuthService(TokenService):
         if TokenService.is_token_expired(token):
             return TokenService.update_token(user_id)
         return token
+
+    @staticmethod
+    def verify(user_id: int):
+        """Верификация пользователя в хранилище."""
+        user = next((user for user in users if user.id == user_id), None)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=USER_NOT_FOUND,
+            )
+        user.is_verified = True

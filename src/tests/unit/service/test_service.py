@@ -100,8 +100,8 @@ def test_decode_jwt_invalid_token(id_for_payload):
 def test_check_token(registred_user_token):
     """Тест проверки токена."""
     response = auth_service.check_token(registred_user_token)
-    assert response.user_id is not None
-    assert response.is_token_valid is True
+    assert response['user_id'] is not None
+    assert response['is_token_valid'] is True
 
 
 def test_check_no_user_token(id_for_payload):

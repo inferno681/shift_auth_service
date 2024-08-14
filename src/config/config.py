@@ -38,6 +38,8 @@ class _ServiceSettings(_SettingsModel):
     debug: bool
     kafka_host: str
     kafka_port: int
+    photo_directory: str
+    acceptable_formats: list[str]
     tags_metadata_auth: dict[str, str]
     tags_metadata_check: dict[str, str]
     tags_metadata_health: dict[str, str]
