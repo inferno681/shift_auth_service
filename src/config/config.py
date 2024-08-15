@@ -45,7 +45,7 @@ class _ServiceSettings(_SettingsModel):
     tags_metadata_health: dict[str, str]
     tags_metadata_verify: dict[str, str]
 
-    def kafka_url(self):
+    def kafka_url(self) -> str:
         return f'{self.kafka_host}:{self.kafka_port}'
 
 

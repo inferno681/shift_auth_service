@@ -2,6 +2,8 @@ import json
 
 from aiokafka import AIOKafkaProducer  # type: ignore
 
+from config import config
+
 
 class KafkaProducer:
     """Класс продьюсера кафка для удобства инициализации."""
@@ -48,4 +50,4 @@ class KafkaProducer:
         return True
 
 
-producer = KafkaProducer(bootstrap_servers='localhost:9092')
+producer = KafkaProducer(bootstrap_servers=config.service.kafka_url())
