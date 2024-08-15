@@ -50,4 +50,6 @@ class KafkaProducer:
         return True
 
 
-producer = KafkaProducer(bootstrap_servers=config.service.kafka_url())
+producer = KafkaProducer(
+    bootstrap_servers=config.service.kafka_url(),  # type: ignore
+)
