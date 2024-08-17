@@ -12,7 +12,7 @@ service:
   db_port: 5432
   db_name: postgres
   db_username: postgres
-  db_echo: True
+  db_echo: False
   tags_metadata_auth:
     name: "Auth"
     description: "Регистрация, аутентификация"

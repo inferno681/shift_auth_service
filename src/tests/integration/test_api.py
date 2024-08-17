@@ -10,7 +10,6 @@ from app.constants import (
     WRONG_IMAGE_FORMAT,
 )
 from app.main import app
-from app.service import users
 
 
 @pytest.mark.anyio
@@ -23,9 +22,8 @@ async def test_registration(client, test_user, registration_link):
 
 
 @pytest.mark.anyio
-async def test_authentication(client, test_user, auth_link, registration_link):
+async def test_authentication(client, test_user, auth_link):
     """Тест аутентификации пользователя."""
-    await client.post(registration_link, json=test_user)
     response = await client.post(auth_link, json=test_user)
     assert response.status_code == 200
     assert 'token' in response.json()
@@ -39,7 +37,6 @@ async def test_registration_existing_user(
     registration_link,
 ):
     """Тест регистрации уже существующего пользователя."""
-    await client.post(registration_link, json=test_user)
     response = await client.post(registration_link, json=test_user)
     assert response.status_code == 400
     assert response.json()['detail'] == USER_EXISTS_MESSAGE.format(
@@ -51,21 +48,18 @@ async def test_registration_existing_user(
 async def test_wrong_login(
     auth_link,
     client,
-    registration_link,
     wrong_user_data,
-    test_user,
 ):
     """Тест аутентификации пользователя с некорректными данными."""
-    await client.post(registration_link, json=test_user)
     response = await client.post(auth_link, json=wrong_user_data)
     assert response.status_code == 404
     assert response.json()['detail'] == USER_NOT_FOUND
 
 
 @pytest.mark.anyio
-async def test_token_check(client, registration_link, test_user, check_link):
+async def test_token_check(client, auth_link, test_user, check_link):
     """Тест проверки токена."""
-    response = await client.post(registration_link, json=test_user)
+    response = await client.post(auth_link, json=test_user)
     token = response.json()['token']
     response = await client.post(check_link, json={'token': token})
     assert response.status_code == 200
@@ -95,22 +89,26 @@ async def test_photo_upload(
     image_file,
     is_kafka_available,
     test_user,
-    registration_link,
+    auth_link,
+    check_link,
 ):
     """Тест загрузки фото."""
-    response = await client.post(registration_link, json=test_user)
+    response = await client.post(auth_link, json=test_user)
+    token = response.json()['token']
+    response = await client.post(check_link, json={'token': token})
+    user_id = response.json()['user_id']
     if is_kafka_available:
         async with LifespanManager(app):
             response = await client.post(
                 verify_link,
-                data={'user_id': users[0].id},
+                data={'user_id': user_id},
                 files={'file': ('one_face.jpg', image_file, 'image/jpeg')},
             )
     else:
         with patch('app.api.endpoints.producer.send_message') as mock_kafka:
             response = await client.post(
                 verify_link,
-                data={'user_id': users[0].id},
+                data={'user_id': user_id},
                 files={'file': ('one_face.jpg', image_file, 'image/jpeg')},
             )
             mock_kafka.assert_called_once
