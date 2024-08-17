@@ -1,6 +1,10 @@
 """Базовые настройки."""
 
 ENCODING_FORMAT = 'utf-8'
+LOGIN_LENGTH = 20
+BALANCE_DEFAULT_VALUE = 0
+HASHED_PASSWORD_LENGTH = 60
+TOKEN_LENGTH = 300
 
 """Сообщения об ошибках."""
 

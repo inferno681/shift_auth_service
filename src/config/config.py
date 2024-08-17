@@ -40,6 +40,11 @@ class _ServiceSettings(_SettingsModel):
     kafka_port: int
     photo_directory: str
     acceptable_formats: list[str]
+    db_hostname: str
+    db_port: int
+    db_name: str
+    db_username: str
+    db_echo: bool
     tags_metadata_auth: dict[str, str]
     tags_metadata_check: dict[str, str]
     tags_metadata_health: dict[str, str]
@@ -53,6 +58,7 @@ class _SettingsSecret(BaseSettings):
     """Базовый класс настроек."""
 
     SECRET: SecretStr = SecretStr('default_secret')
+    db_password: SecretStr = SecretStr('password')
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -64,6 +70,16 @@ class Settings(_SettingsModel, _SettingsSecret):
     """Настройки сервиса."""
 
     service: _ServiceSettings
+
+    @property
+    def database_url(self):
+        """Ссылка для подключения к базе данных."""
+        return (
+            f'postgresql+asyncpg://{self.service.db_username}:'
+            f'{self.db_password.get_secret_value()}@'
+            f'{self.service.db_hostname}:'
+            f'{self.service.db_port}/{self.service.db_name}'
+        )
 
 
 config = Settings.from_yaml('src/config/config.yaml')

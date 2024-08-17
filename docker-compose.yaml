@@ -24,7 +24,3 @@ services:
        - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
        - zookeeper
-  fast:
-    build: .
-    ports:
-      - 8000:8000
