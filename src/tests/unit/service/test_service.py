@@ -1,6 +1,9 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import jwt
 import pytest
 from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.constants import (
     INVALID_TOKEN_MESSAGE,
@@ -9,7 +12,7 @@ from app.constants import (
     USER_EXISTS_MESSAGE,
     USER_NOT_FOUND,
 )
-from app.service import AuthService, users
+from app.service import AuthService
 from config import config
 
 auth_service = AuthService()
@@ -17,6 +20,10 @@ auth_service = AuthService()
 
 def test_registration(user_data):
     """Тест регистрации пользователя."""
+    mock_session = AsyncMock(spec=AsyncSession)
+    mock_user = MagicMock()
+    mock_user.scalar_one_or_none.return_value = MagicMock(None)
+    mock_session.execute.return_value = mock_user
     assert auth_service.registration(**user_data) is not None
     assert len(users) == 1
     assert users[0].login == user_data['login']

@@ -13,8 +13,7 @@ from app.constants import (
     USER_EXISTS_MESSAGE,
     USER_NOT_FOUND,
 )
-from app.db import Token as dbToken
-from app.db import User as dbUser
+from app.db import Token, User
 from config import config
 
 
@@ -25,20 +24,17 @@ class TokenService:
     async def get_token(user_id: int, session: AsyncSession) -> str | None:
         """Проверка наличия токена пользователя."""
         token = await session.execute(
-            select(dbToken.token).where(dbToken.user_id == user_id),
+            select(Token.token).where(Token.user_id == user_id),
         )
         return token.scalar_one_or_none()
 
     @staticmethod
     async def create_and_put_token(user_id: int, session: AsyncSession) -> str:
         """Создание и отправка токена в хранилище."""
-        token = dbToken(
-            user_id=user_id,
-            token=AuthService.generate_jwt_token(user_id),
-        )
-        session.add(token)
+        token = AuthService.generate_jwt_token(user_id)
+        session.add(Token(user_id=user_id, token=token))
         await session.commit()
-        return token.token
+        return token
 
     @staticmethod
     def is_token_expired(token: str) -> bool:
@@ -52,12 +48,10 @@ class TokenService:
     @staticmethod
     async def update_token(user_id: int, session: AsyncSession) -> str:
         """Обновление существующего токена в хранилище."""
-        token = dbToken(
-            user_id=user_id,
-            token=AuthService.generate_jwt_token(user_id),
-        )
+        token = AuthService.generate_jwt_token(user_id)
+        Token(user_id=user_id, token=token)
         await session.commit()
-        return token.token
+        return token
 
     @staticmethod
     async def check_token(token: str, session: AsyncSession) -> dict:
@@ -128,20 +122,20 @@ class AuthService(TokenService):
         session: AsyncSession,
     ) -> str:
         """Регистрация пользователя."""
-        user = await session.execute(
-            select(dbUser).where(dbUser.login == login),
+        query_result = await session.execute(
+            select(User).where(User.login == login),
         )
-        if user.scalar_one_or_none():
+        if query_result.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=USER_EXISTS_MESSAGE.format(login=login),
             )
         hashed_password = AuthService.hash_password(password)
-        user = dbUser(login=login, hashed_password=hashed_password)
+        user = User(login=login, hashed_password=hashed_password)
         session.add(user)
         await session.flush()
         token = AuthService.generate_jwt_token(user.id)
-        session.add(dbToken(user_id=user.id, token=token))
+        session.add(Token(user_id=user.id, token=token))
         await session.commit()
         return token
 
@@ -150,12 +144,12 @@ class AuthService(TokenService):
         login: str,
         password: str,
         session: AsyncSession,
-    ) -> dbUser | None:
+    ) -> User | None:
         """Проверка наличия пользователя в бд."""
-        user = await session.execute(
-            select(dbUser).where(dbUser.login == login),
+        query_result = await session.execute(
+            select(User).where(User.login == login),
         )
-        user = user.scalar_one_or_none()
+        user = query_result.scalar_one_or_none()
         if user and AuthService.check_password(password, user.hashed_password):
             return user
         raise HTTPException(
@@ -184,10 +178,10 @@ class AuthService(TokenService):
     @staticmethod
     async def verify(user_id: int, session: AsyncSession):
         """Верификация пользователя в хранилище."""
-        user = await session.execute(
-            select(dbUser).where(dbUser.id == user_id),
+        query_result = await session.execute(
+            select(User).where(User.id == user_id),
         )
-        user = user.scalar_one_or_none()
+        user = query_result.scalar_one_or_none()
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

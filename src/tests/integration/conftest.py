@@ -1,9 +1,32 @@
 import pytest
-
-from app.service import AuthService
 from httpx import AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.service import producer
+from app.db import Base, get_async_session
+from app.service import AuthService, producer
+
+
+@pytest.fixture(scope='session')
+async def session():
+    """Получение сессии для подключения к бд."""
+    async for session in get_async_session():
+        yield session
+
+
+@pytest.fixture(scope='session', autouse=True)
+async def clear_database(session: AsyncSession):
+    """Фикстура для очистки всех данных из базы данных перед тестами."""
+    async with session.begin():
+        await session.execute(text('SET session_replication_role = replica;'))
+        for table in reversed(Base.metadata.sorted_tables):
+            await session.execute(table.delete())
+        for table in Base.metadata.sorted_tables:
+            await session.execute(
+                text(f'ALTER SEQUENCE {table.name}_id_seq RESTART WITH 1;'),
+            )
+        await session.execute(text('SET session_replication_role = DEFAULT;'))
+        await session.commit()
 
 
 @pytest.fixture(scope='session')

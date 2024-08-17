@@ -3,18 +3,8 @@ from datetime import datetime, timedelta
 import jwt
 import pytest
 
-from app.service import AuthService, tokens, users
+from app.service import AuthService
 from config import config
-
-
-@pytest.fixture(autouse=True)
-def user_storage():
-    """Фикстура для очистки хранилища перед каждым текстом."""
-    users.clear()
-    tokens.clear()
-    yield
-    users.clear()
-    tokens.clear()
 
 
 @pytest.fixture()
