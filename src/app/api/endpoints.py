@@ -2,8 +2,16 @@ import os
 from uuid import uuid1
 
 import aiofiles
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
-
+from fastapi import (
+    APIRouter,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    status,
+    Depends,
+)
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.schemes import (
     IsReady,
     KafkaResponse,
@@ -15,6 +23,7 @@ from app.api.schemes import (
 from app.constants import FILENAME_ERROR, UPLOAD_ERROR, WRONG_IMAGE_FORMAT
 from app.service import AuthService, producer
 from config import config
+from app.db import get_async_session
 
 router_auth = APIRouter()
 router_check = APIRouter()
@@ -23,12 +32,15 @@ router_verify = APIRouter()
 
 
 @router_auth.post('/registration', response_model=UserToken)
-async def registration(user: UserCreate):
+async def registration(
+    user: UserCreate, session: AsyncSession = Depends(get_async_session)
+):
     """Эндпоинт регистрации пользователя."""
     return UserToken(
-        token=AuthService.registration(
+        token=await AuthService.registration(
             login=user.login,
             password=user.password,
+            session=session,
         ),
     )
 

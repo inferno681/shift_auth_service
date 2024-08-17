@@ -2,7 +2,10 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from decimal import Decimal
 from itertools import count
-
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from app.db import User as dbUser
+from app.db import Token as dbToken
 import bcrypt
 import jwt
 from fastapi import HTTPException, status
@@ -148,18 +151,27 @@ class AuthService(TokenService):
         )
 
     @staticmethod
-    def registration(login, password):
+    async def registration(
+        login: str,
+        password: str,
+        session: AsyncSession,
+    ) -> str:
         """Регистрация пользователя."""
-        if next((user for user in users if user.login == login), None):
+        user = await session.execute(
+            select(dbUser).where(dbUser.login == login),
+        )
+        if user.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=USER_EXISTS_MESSAGE.format(login=login),
             )
         hashed_password = AuthService.hash_password(password)
-        user = User(login=login, hashed_password=hashed_password)
-        users.append(user)
+        user = dbUser(login=login, hashed_password=hashed_password)
+        session.add(user)
+        await session.flush()
         token = AuthService.generate_jwt_token(user.id)
-        tokens.append(Token(user.id, token))
+        session.add(dbToken(user_id=user.id, token=token))
+        await session.commit()
         return token
 
     @staticmethod

@@ -18,7 +18,7 @@ class User(Base):
     """Модель пользователя."""
 
     id: Mapped[intpk]
-    login: Mapped[str] = mapped_column(String(LOGIN_LENGTH))
+    login: Mapped[str] = mapped_column(String(LOGIN_LENGTH), unique=True)
     hashed_password: Mapped[str] = mapped_column(
         String(HASHED_PASSWORD_LENGTH),
     )
