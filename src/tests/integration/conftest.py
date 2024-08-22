@@ -1,53 +1,15 @@
 import pytest
-from httpx import AsyncClient
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import Base, get_async_session
-from app.service import AuthService, producer
-
-
-@pytest.fixture(scope='session')
-async def session():
-    """Получение сессии для подключения к бд."""
-    async for session in get_async_session():
-        yield session
+from app.db.database import engine
+from app.service import AuthService
 
 
-@pytest.fixture(scope='session', autouse=True)
-async def clear_database(session: AsyncSession):
-    """Фикстура для очистки всех данных из базы данных перед тестами."""
-    async with session.begin():
-        await session.execute(text('SET session_replication_role = replica;'))
-        for table in reversed(Base.metadata.sorted_tables):
-            await session.execute(table.delete())
-        for table in Base.metadata.sorted_tables:
-            await session.execute(
-                text(f'ALTER SEQUENCE {table.name}_id_seq RESTART WITH 1;'),
-            )
-        await session.execute(text('SET session_replication_role = DEFAULT;'))
-        await session.commit()
-
-
-@pytest.fixture(scope='session')
-def anyio_backend():
-    """Бэкэнд для тестирования."""
-    return 'asyncio'
-
-
-@pytest.fixture
-async def is_kafka_available():
-    """Фикстура для проверки доступности Kafka."""
-    return await producer.check()
-
-
-@pytest.fixture
-async def client():
-    """Фикстура клиента."""
-    async with AsyncClient(
-        base_url='http://127.0.0.1:8000/api/',
-    ) as client:
-        yield client
+@pytest.fixture()
+async def delete_token():
+    """Удаление токена из бд."""
+    async with engine.connect() as conn:
+        await conn.execute(text('UPDATE token SET token = NULL WHERE id = 1'))
 
 
 @pytest.fixture

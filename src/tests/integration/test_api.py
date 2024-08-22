@@ -1,7 +1,5 @@
-from unittest.mock import patch
-
 import pytest
-from asgi_lifespan import LifespanManager
+from sqlalchemy import text
 
 from app.constants import (
     KAFKA_RESPONSE,
@@ -9,7 +7,7 @@ from app.constants import (
     USER_NOT_FOUND,
     WRONG_IMAGE_FORMAT,
 )
-from app.main import app
+from app.db.database import engine
 
 
 @pytest.mark.anyio
@@ -17,8 +15,15 @@ async def test_registration(client, test_user, registration_link):
     """Тест регистрации пользователя."""
     response = await client.post(registration_link, json=test_user)
     assert response.status_code == 200
-    assert 'token' in response.json()
-    assert response.json()['token'] is not None
+    async with engine.connect() as conn:
+        user = await conn.execute(
+            text('SELECT login FROM "user" WHERE id = 1'),
+        )
+        token = await conn.execute(
+            text('SELECT token FROM token WHERE user_id = 1'),
+        )
+        assert test_user['login'] == user.scalar_one_or_none()
+        assert response.json()['token'] == token.scalar_one_or_none()
 
 
 @pytest.mark.anyio
@@ -27,7 +32,15 @@ async def test_authentication(client, test_user, auth_link):
     response = await client.post(auth_link, json=test_user)
     assert response.status_code == 200
     assert 'token' in response.json()
-    assert response.json()['token'] is not None
+    async with engine.connect() as conn:
+        user = await conn.execute(
+            text('SELECT login FROM "user" WHERE id = 1'),
+        )
+        token = await conn.execute(
+            text('SELECT token FROM token WHERE user_id = 1'),
+        )
+        assert test_user['login'] == user.scalar_one_or_none()
+        assert response.json()['token'] == token.scalar_one_or_none()
 
 
 @pytest.mark.anyio
@@ -87,7 +100,6 @@ async def test_photo_upload(
     client,
     verify_link,
     image_file,
-    is_kafka_available,
     test_user,
     auth_link,
     check_link,
@@ -97,21 +109,12 @@ async def test_photo_upload(
     token = response.json()['token']
     response = await client.post(check_link, json={'token': token})
     user_id = response.json()['user_id']
-    if is_kafka_available:
-        async with LifespanManager(app):
-            response = await client.post(
-                verify_link,
-                data={'user_id': user_id},
-                files={'file': ('one_face.jpg', image_file, 'image/jpeg')},
-            )
-    else:
-        with patch('app.api.endpoints.producer.send_message') as mock_kafka:
-            response = await client.post(
-                verify_link,
-                data={'user_id': user_id},
-                files={'file': ('one_face.jpg', image_file, 'image/jpeg')},
-            )
-            mock_kafka.assert_called_once
+    response = await client.post(
+        verify_link,
+        data={'user_id': user_id},
+        files={'file': ('one_face.jpg', image_file, 'image/jpeg')},
+    )
+
     assert response.status_code == 200
     assert response.json()['message'] == KAFKA_RESPONSE
 
@@ -128,3 +131,17 @@ async def test_wrong_file_upload(client, verify_link, wrong_file):
     assert response.json()['detail'] == WRONG_IMAGE_FORMAT.format(
         extension=wrong_file[-4:],
     )
+
+
+@pytest.mark.anyio
+async def test_authentication_without_token(
+    client,
+    test_user,
+    auth_link,
+    delete_token,
+):
+    """Тест аутентификации пользователя без токена в бд."""
+    response = await client.post(auth_link, json=test_user)
+    assert response.status_code == 200
+    assert 'token' in response.json()
+    assert response.json()['token'] is not None

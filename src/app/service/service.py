@@ -144,7 +144,7 @@ class AuthService(TokenService):
         login: str,
         password: str,
         session: AsyncSession,
-    ) -> User | None:
+    ) -> User:
         """Проверка наличия пользователя в бд."""
         query_result = await session.execute(
             select(User).where(User.login == login),
@@ -165,8 +165,6 @@ class AuthService(TokenService):
     ) -> str | None:
         """Аутентификация пользователя."""
         user = await AuthService.get_user(login, password, session)
-        if not user:
-            return None
         user_id = user.id
         token = await TokenService.get_token(user_id, session)
         if not token:

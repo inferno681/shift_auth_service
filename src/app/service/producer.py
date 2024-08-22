@@ -39,16 +39,6 @@ class KafkaProducer:
             value=user_data,
         )
 
-    async def check(self):
-        """Метод для проверки доступности кафка."""
-        try:
-            await self.start()
-            await self.producer.client.fetch_all_metadata()
-            await self.stop()
-        except Exception:
-            return False
-        return True
-
 
 producer = KafkaProducer(
     bootstrap_servers=config.service.kafka_url(),  # type: ignore
