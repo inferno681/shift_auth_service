@@ -15,8 +15,6 @@ RUN poetry config virtualenvs.create false
 
 RUN poetry install
 
-COPY ./stubs  ./stubs
-
 COPY ./alembic.ini  ./alembic.ini
 
 COPY ./setup.cfg  ./setup.cfg
