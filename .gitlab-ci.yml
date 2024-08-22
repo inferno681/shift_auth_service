@@ -65,7 +65,7 @@ pre_commit:
   script:
     - docker compose -f docker-compose-test.yaml exec auth_service flake8 src/
     - docker compose -f docker-compose-test.yaml exec auth_service mypy src/
-    - docker compose -f docker-compose-test.yaml exec auth_service pytest --cov --cov-fail-under=90 --cov-report xml:coverage.xml
+    - docker compose -f docker-compose-test.yaml exec auth_service pytest --cov --cov-fail-under=90 --cov-report term-missing --cov-report xml:coverage.xml
     - docker cp $(docker compose -f docker-compose-test.yaml ps -q auth_service):/app/coverage.xml ./coverage.xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
@@ -78,7 +78,7 @@ coverage:
   stage: coverage
   extends: .docker_base
   script:
-    - docker compose -f docker-compose-test.yaml exec auth_service pytest --cov --cov-fail-under=90 --cov-report xml:coverage.xml
+    - docker compose -f docker-compose-test.yaml exec auth_service pytest --cov --cov-fail-under=90 --cov-report term-missing --cov-report xml:coverage.xml
     - docker cp $(docker compose -f docker-compose-test.yaml ps -q auth_service):/app/coverage.xml ./coverage.xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
