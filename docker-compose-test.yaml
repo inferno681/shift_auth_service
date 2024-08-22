@@ -52,6 +52,8 @@ services:
     restart: always
     ports:
       - 8000:8000
+    volumes:
+      - ./coverage.xml:/app/coverage.xml
     depends_on:
       kafka:
         condition: service_healthy
