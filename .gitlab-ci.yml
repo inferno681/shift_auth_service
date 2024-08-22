@@ -47,7 +47,6 @@ mypy:
         compare_to: "main"
   script:
     - poetry run mypy src/
-  retry: 2
 
 test:
   stage: test
