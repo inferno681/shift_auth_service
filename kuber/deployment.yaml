@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stakrotckii-auth-service-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: stakrotckii-auth-service
+  template:
+    metadata:
+      labels:
+        app: stakrotckii-auth-service
+    spec:
+      containers:
+        - name: stakrotckii-auth-service
+          image: inferno681/auth_service
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: 100m
+          ports:
+            - containerPort: 8000

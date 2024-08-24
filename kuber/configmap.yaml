@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stakrotckii-auth-service-configmap
+data:
+  config.yaml: |
+    title: "Auth service"
+    description: "Сервис авторизации"
+    host: "0.0.0.0"
+    port: 8000
+    debug: True
+    kafka_host: "kafka"
+    kafka_port: 9092
+    photo_directory: "./photos"
+    acceptable_formats: [".jpg", ".jpeg", ".png"]
+    db_hostname: "db"
+    db_port: 5432
+    db_name: postgres
+    db_username: postgres
+    db_echo: False
+    tags_metadata_auth:
+      name: "Auth"
+      description: "Регистрация, аутентификация"
+    tags_metadata_check:
+      name: "Check"
+      description: "Проверка токена"
+    tags_metadata_health:
+      name: "Health"
+      description: "Проверка доступности сервиса"
+    tags_metadata_verify:
+      name: "Verify"
+      description: "Верификация пользователя по фото"
