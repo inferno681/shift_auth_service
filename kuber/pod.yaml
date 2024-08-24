@@ -42,4 +42,4 @@ spec:
   volumes:
     - name: auth-service-config-volume
       configMap:
-        name: stakrotckii-auth_service-configmap
+        name: stakrotckii-auth-service-configmap
