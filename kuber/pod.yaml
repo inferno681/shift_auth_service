@@ -27,10 +27,10 @@ spec:
         - containerPort: 8000
       resources:
         limits:
-          memory: "2Mi"
+          memory: "750Mi"
           cpu: 200m
         requests:
-          memory: "1Mi"
+          memory: "350Mi"
           cpu: 100m
       readinessProbe:
         httpGet:
