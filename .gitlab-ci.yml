@@ -22,6 +22,7 @@ stages:
   - test
   - pre_commit
   - coverage
+  - other_registry_build
   - build
 
 lint:
@@ -102,3 +103,18 @@ build_and_push_to_docker_hub:
     - docker buildx build --platform linux/amd64,linux/arm64 -t $DOCKERHUB_USERNAME/$IMAGE_NAME:latest --push .
   only:
     - main
+
+other_registry_build:
+  stage: other_registry_build
+  before_script:
+    - export DOCKER_CONFIG="$(mktemp -d)/"
+    - echo -e $DOCKER_AUTH_CONFIG > $DOCKER_CONFIG/config.json
+  script:
+    - docker tag python:3.12-bookworm "${CI_REGISTRY}/python-ci:latest"
+    - docker push "${CI_REGISTRY}/python-ci:latest"
+  after_script:
+    - rm -f $DOCKER_CONFIG
+    - unset DOCKER_CONFIG
+  tags:
+    - shell
+  allow_failure: true
