@@ -113,10 +113,7 @@ other_registry_build:
     - echo -e $DOCKER_AUTH_CONFIG > $DOCKER_CONFIG/config.json
   script:
     - docker buildx create --use
-    - docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_TEST_NAME:latest .
-    - docker tag $IMAGE_TEST_NAME:latest "${CI_REGISTRY}/$IMAGE_TEST_NAME:latest"
-    - docker push "${CI_REGISTRY}/$IMAGE_TEST_NAME:latest"
-
+    - docker buildx build --platform linux/amd64,linux/arm64 -t ${CI_REGISTRY}/$IMAGE_TEST_NAME:test --push .
   after_script:
     - rm -f $DOCKER_CONFIG
     - unset DOCKER_CONFIG
