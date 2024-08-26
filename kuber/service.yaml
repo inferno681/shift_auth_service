@@ -4,7 +4,8 @@ metadata:
   name: stakrotckii-auth-service-service
 spec:
   selector:
-    app: stakrotckii-auth-service
+    app.kubernetes.io/name: stakrotckii
+    app.kubernetes.io/instance: auth-service-abcxyz
   ports:
     - port: 8000
       targetPort: 8000

@@ -3,7 +3,8 @@ kind: Pod
 metadata:
   name: stakrotckii-auth-service-pod
   labels:
-    app: stakrotckii-auth-service
+    app.kubernetes.io/name: stakrotckii
+    app.kubernetes.io/instance: auth-service-abcxyz
 spec:
   containers:
     - image: inferno681/auth_service

@@ -11,7 +11,7 @@ data:
       port: 8000
       debug: True
       kafka_host: "infra-kafka-controller-headless"
-      kafka_port: 9094
+      kafka_port: 9092
       kafka_topic: "stakrotckii_face_topic"
       photo_directory: "./photos"
       acceptable_formats: [".jpg", ".jpeg", ".png"]
