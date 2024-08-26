@@ -15,8 +15,6 @@
   after_script:
     - docker compose -f docker-compose-test.yaml down
   retry: 2
-  tags:
-    - shell, dind
 
 variables:
   DOCKER_DRIVER: overlay2
