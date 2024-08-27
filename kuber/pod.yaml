@@ -13,6 +13,8 @@ spec:
         - name: auth-service-config-volume
           mountPath: /app/src/config/config.yaml
           subPath: config.yaml
+        - mountPath: /app/photos
+          name: photo-storage
       env:
         - name: SECRET
           valueFrom:
@@ -44,3 +46,6 @@ spec:
     - name: auth-service-config-volume
       configMap:
         name: stakrotckii-auth-service-configmap
+    - name: photo-storage
+      persistentVolumeClaim:
+        claimName: stakrotckii-photo-pvc
