@@ -112,8 +112,8 @@ other_registry_build:
     - export DOCKER_CONFIG="$(mktemp -d)/"
     - echo -e $DOCKER_AUTH_CONFIG > $DOCKER_CONFIG/config.json
   script:
-    - docker build -t ${CI_REGISTRY}/auth_service:latest .
-    - docker push ${CI_REGISTRY}/auth_service:latest
+    - docker build -t ${CI_REGISTRY}/$IMAGE_NAME:latest .
+    - docker push ${CI_REGISTRY}/$IMAGE_NAME:latest
   after_script:
     - rm -f $DOCKER_CONFIG
     - unset DOCKER_CONFIG
