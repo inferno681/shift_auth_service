@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "auth-service-chart.fullname" . }}
+  name: {{ include "auth-service-chart.fullname" . }}-deployment
   labels:
     {{- include "auth-service-chart.labels" . | nindent 4 }}
 spec:

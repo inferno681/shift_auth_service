@@ -95,6 +95,7 @@ affinity: {}
 
 app:
   servicePort: 8000
+  surname: stakrotckii
   env:
     - name: SECRET
       valueFrom:
