@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "auth-service-chart.fullname" . }}-deployment
+  name: {{ .Release.Name }}-deployment
   labels:
     {{- include "auth-service-chart.labels" . | nindent 4 }}
 spec:
@@ -37,12 +37,12 @@ spec:
             - name: SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "auth-service-chart.fullname" . }}-secret
+                  name: {{ .Release.Name }}-secret
                   key: SECRET
             - name: db_password
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "auth-service-chart.fullname" . }}-secret
+                  name: {{ .Release.Name }}-secret
                   key: db_password
           ports:
             - name: http
@@ -59,10 +59,10 @@ spec:
       volumes:
         - name: auth-service-config-volume
           configMap:
-            name: {{ include "auth-service-chart.fullname" . }}-configmap
+            name: {{ .Release.Name }}-configmap
         - name: photo-storage
           persistentVolumeClaim:
-            claimName: {{.Release.Name}}-photo-pvc
+            claimName: {{.Values.app.pvc_name}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

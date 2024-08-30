@@ -104,3 +104,11 @@ app:
   secret_data:
     SECRET: U0VDUkVU
     db_password: cGFzc3dvcmQ=
+  pvc_name: stakrotckii-image-pvc
+  pvc_spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Mi
+    storageClassName: yc-network-hdd
