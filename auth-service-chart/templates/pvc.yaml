@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: stakrotckii-photo-pvc
+  name: {{.Release.Name}}-photo-pvc
 spec:
   accessModes:
     - ReadWriteOnce
