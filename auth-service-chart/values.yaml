@@ -95,7 +95,6 @@ affinity: {}
 
 app:
   servicePort: 8000
-  surname: stakrotckii
   env:
     - name: SECRET
       valueFrom:
@@ -137,3 +136,6 @@ app:
         tags_metadata_verify:
           name: "Verify"
           description: "Верификация пользователя по фото"
+  secret_data:
+    SECRET: U0VDUkVU
+    db_password: cGFzc3dvcmQ=
