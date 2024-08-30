@@ -8,22 +8,11 @@ image:
   repository: inferno681/auth_service
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
 
 podAnnotations: {}
 podLabels: {}
@@ -43,7 +32,7 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8000
 
 resources:
   limits:
@@ -53,10 +42,6 @@ resources:
     memory: "350Mi"
     cpu: "100m"
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
 readinessProbe:
   httpGet:
     path: /api/healthz/ready
@@ -69,15 +54,6 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
-
-# Additional volumes on the output Deployment definition.
-volumes:
-  - name: auth-service-config-volume
-    configMap:
-      name: stakrotckii-auth-service-configmap
-  - name: photo-storage
-    persistentVolumeClaim:
-      claimName: stakrotckii-photo-pvc
 
 # Additional volumeMounts on the output Deployment definition.
 volumeMounts:
@@ -95,17 +71,6 @@ affinity: {}
 
 app:
   servicePort: 8000
-  env:
-    - name: SECRET
-      valueFrom:
-        secretKeyRef:
-          name: stakrotckii-auth-service-secret
-          key: SECRET
-    - name: db_password
-      valueFrom:
-        secretKeyRef:
-          name: stakrotckii-auth-service-secret
-          key: db_password
   data:
     config.yaml: |
       service:

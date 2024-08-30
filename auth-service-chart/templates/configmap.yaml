@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: {{ include "auth-service-chart.fullname" . }}-configmap
 data:
-  {{- toYaml .Values.app.data}}
+  {{- toYaml .Values.app.data | nindent 2}}

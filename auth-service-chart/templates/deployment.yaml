@@ -25,7 +25,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "auth-service-chart.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -35,13 +34,20 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            {{- toYaml .Values.app.env | nindent 12 }}
+            - name: SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "auth-service-chart.fullname" . }}-secret
+                  key: SECRET
+            - name: db_password
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "auth-service-chart.fullname" . }}-secret
+                  key: db_password
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
@@ -50,10 +56,13 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.volumes }}
       volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - name: auth-service-config-volume
+          configMap:
+            name: {{ include "auth-service-chart.fullname" . }}-configmap
+        - name: photo-storage
+          persistentVolumeClaim:
+            claimName: {{.Release.Name}}-photo-pvc
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
