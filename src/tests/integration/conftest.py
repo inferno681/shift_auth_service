@@ -69,3 +69,9 @@ def wrong_user_data(request):
 def no_user_token():
     """Фикстура с токеном несуществующего пользователя."""
     return AuthService.generate_jwt_token(5)
+
+
+@pytest.fixture
+def check_health_link():
+    """Фикстура со ссылкой на проверку готовности сервиса."""
+    return '/healthz/ready'

@@ -38,6 +38,7 @@ class _ServiceSettings(_SettingsModel):
     debug: bool
     tags_metadata_auth: dict[str, str]
     tags_metadata_check: dict[str, str]
+    tags_metadata_health: dict[str, str]
 
 
 class _SettingsSecret(BaseSettings):

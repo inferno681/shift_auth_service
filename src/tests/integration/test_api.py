@@ -68,3 +68,11 @@ async def test_no_user_token_check(client, check_link, no_user_token):
     response = await client.post(check_link, json={'token': no_user_token})
     assert response.status_code == 200
     assert response.json()['is_token_valid'] is False
+
+
+@pytest.mark.anyio
+async def test_check_healthz(client, check_health_link):
+    """Тест проверки запущени ли сервис."""
+    response = await client.get(check_health_link)
+    assert response.status_code == 200
+    assert response.json()['is_ready'] is True
