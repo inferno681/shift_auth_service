@@ -34,7 +34,10 @@ pip install poetry
 ```bash
 poetry install
 ```
-
+- Для запуска API выполните команду:
+```bash
+python src/app/main.py
+```
 </details>
 
 <details><summary><h1>Инструкция по запуску линтера</h1></summary>
