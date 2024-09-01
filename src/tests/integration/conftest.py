@@ -2,13 +2,19 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
-from app.service import AuthService, users
+from app.service import AuthService, producer, users
 
 
 @pytest.fixture
 def anyio_backend():
     """Бэкэнд для тестирования."""
     return 'asyncio'
+
+
+@pytest.fixture
+async def is_kafka_available():
+    """Фикстура для проверки доступности Kafka."""
+    return await producer.check()
 
 
 @pytest.fixture(autouse=True)
@@ -75,3 +81,21 @@ def no_user_token():
 def check_health_link():
     """Фикстура со ссылкой на проверку готовности сервиса."""
     return '/healthz/ready'
+
+
+@pytest.fixture
+def verify_link():
+    """Фикстура со ссылкой на загрузку фото."""
+    return '/verify'
+
+
+@pytest.fixture
+def image_file():
+    """Фикстура со ссылкой на файл с фото."""
+    return 'src/tests/test_files/one_face.jpg'
+
+
+@pytest.fixture
+def wrong_file():
+    """Фикстура со ссылкой файл не являющийся изображением."""
+    return 'src/tests/test_files/wrong_file.txt'

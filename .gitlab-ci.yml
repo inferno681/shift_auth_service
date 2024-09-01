@@ -7,6 +7,7 @@ default:
     - pip install poetry
     - poetry config virtualenvs.create false
     - poetry install
+    - mkdir -p "./photos"
   retry: 2
 
 variables:
