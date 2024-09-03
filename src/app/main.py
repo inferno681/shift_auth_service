@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI, Request
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from prometheus_client import make_asgi_app
 
 from app.api import router
@@ -16,7 +15,6 @@ from app.metrics import (
     REQUEST_DURATION,
 )
 from app.service import producer
-from app.tracer import setup_tracer
 from config import config
 
 log = logging.getLogger('uvicorn')
@@ -29,8 +27,6 @@ async def lifespan(app: FastAPI):
         os.makedirs(config.service.photo_directory)  # type: ignore
     await producer.start()
     log.info('kafka producer started')
-    setup_tracer()
-    log.info('tracer started')
     yield
     await producer.stop()
     log.info('kafkaproducer stopped')
@@ -51,7 +47,7 @@ app = FastAPI(
 )  # type: ignore
 
 app.include_router(router, prefix='/api')
-FastAPIInstrumentor.instrument_app(app)
+
 metrics_app = make_asgi_app()
 app.mount('/metrics', metrics_app)
 
