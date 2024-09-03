@@ -89,6 +89,8 @@ app:
         db_name: vstakrotskij
         db_username: username
         db_echo: False
+        tracer_host: "jaeger-query-service"
+        tracer_port: 6831
         tags_metadata_auth:
           name: "Auth"
           description: "Регистрация, аутентификация"
@@ -112,3 +114,7 @@ app:
       requests:
         storage: 100Mi
     storageClassName: yc-network-hdd
+  prometheus_setup:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "8000"

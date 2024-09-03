@@ -4,6 +4,8 @@ metadata:
   name: {{ .Release.Name }}-service
   labels:
     {{- include "auth-service-chart.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.app.prometheus_setup | nindent 4}}
 spec:
   type: {{ .Values.service.type }}
   ports:

@@ -8,6 +8,12 @@ from app.constants import (
     WRONG_IMAGE_FORMAT,
 )
 from app.db.database import engine
+from app.metrics import (
+    AUTH_RESULT,
+    READY_PROBE,
+    REQUEST_COUNT,
+    REQUEST_DURATION,
+)
 
 
 @pytest.mark.anyio
@@ -145,3 +151,14 @@ async def test_authentication_without_token(
     assert response.status_code == 200
     assert 'token' in response.json()
     assert response.json()['token'] is not None
+
+
+@pytest.mark.anyio
+async def test_metrics(client, metrics_link):
+    """Тест эндпоинта для сбора метрик."""
+    response = await client.get(metrics_link)
+    assert response.status_code == 200
+    assert READY_PROBE._documentation in response.text
+    assert REQUEST_COUNT._documentation in response.text
+    assert REQUEST_DURATION._documentation in response.text
+    assert AUTH_RESULT._documentation in response.text

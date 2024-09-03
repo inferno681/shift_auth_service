@@ -43,6 +43,6 @@ async def client():
     async with LifespanManager(app):
         async with AsyncClient(
             transport=ASGITransport(app=app),
-            base_url='http://127.0.0.1:8000/api/',
+            base_url='http://127.0.0.1:8000/',
         ) as client:
             yield client

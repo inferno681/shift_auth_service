@@ -20,6 +20,8 @@ data:
       db_name: vstakrotskij
       db_username: username
       db_echo: False
+      tracer_host: "jaeger-query-service"
+      tracer_port: 6831
       tags_metadata_auth:
         name: "Auth"
         description: "Регистрация, аутентификация"
