@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI, Request
+from jaeger_client import Config
+from opentracing import Format, tags
 from prometheus_client import make_asgi_app
 
 from app.api import router
@@ -27,6 +29,23 @@ async def lifespan(app: FastAPI):
         os.makedirs(config.service.photo_directory)  # type: ignore
     await producer.start()
     log.info('kafka producer started')
+    tracer_config = Config(
+        config={
+            'sampler': {
+                'type': 'const',
+                'param': 1,
+            },
+            'local_agent': {
+                'reporting_host': 'localhost',
+                'reporting_port': '6831',
+            },
+            'logging': True,
+        },
+        service_name='jaeger_test',
+        validate=True,
+    )
+    tracer = tracer_config.initialize_tracer()
+    app.state.jaeger_tracer = tracer
     yield
     await producer.stop()
     log.info('kafkaproducer stopped')
@@ -74,6 +93,26 @@ async def metrics_middleware(request: Request, call_next):
         AUTH_RESULT.labels(status=response.status_code).inc()
 
     return response
+
+
+@app.middleware('http')
+async def tracing_middleware(request: Request, call_next):
+    """Middleware для трейсинга."""
+    tracer = request.app.state.jaeger_tracer
+    span_ctx = tracer.extract(Format.HTTP_HEADERS, request.headers)
+    span_tags = {
+        tags.SPAN_KIND: tags.SPAN_KIND_RPC_SERVER,
+        tags.HTTP_METHOD: request.method,
+        tags.HTTP_URL: str(request.url),
+    }
+    with tracer.start_active_span(
+        f'transactions_{request.method}_{request.url.path}',
+        child_of=span_ctx,
+        tags=span_tags,
+    ) as scope:
+        response = await call_next(request)
+        scope.span.set_tag(tags.HTTP_STATUS_CODE, response.status_code)
+        return response
 
 
 if __name__ == '__main__':
