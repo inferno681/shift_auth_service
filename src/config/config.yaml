@@ -14,8 +14,6 @@ service:
   db_name: postgres
   db_username: postgres
   db_echo: False
-  tracer_host: "localhost"
-  tracer_port: 6831
   tags_metadata_auth:
     name: "Auth"
     description: "Регистрация, аутентификация"
@@ -30,8 +28,8 @@ service:
     description: "Верификация пользователя по фото"
 
 jaeger:
-  service_name: "gateway"
-  host: "localhost"
+  service_name: "auth_service"
+  host: "jaeger"
   port: 6831
   logging: True
   sampler_type: "const"

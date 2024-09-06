@@ -46,8 +46,6 @@ class _ServiceSettings(_SettingsModel):
     db_name: str
     db_username: str
     db_echo: bool
-    tracer_host: str
-    tracer_port: int
     tags_metadata_auth: dict[str, str]
     tags_metadata_check: dict[str, str]
     tags_metadata_health: dict[str, str]
