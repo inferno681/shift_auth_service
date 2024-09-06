@@ -70,10 +70,22 @@ class _SettingsSecret(BaseSettings):
     )
 
 
+class _JaegerSettings(_SettingsModel):
+    """Валидация настроек настроек jaeger."""
+
+    service_name: str
+    host: str
+    port: int
+    logging: bool
+    sampler_type: str
+    sampler_param: float | int
+
+
 class Settings(_SettingsModel, _SettingsSecret):
     """Настройки сервиса."""
 
     service: _ServiceSettings
+    jaeger: _JaegerSettings
 
     @property
     def database_url(self):

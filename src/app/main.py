@@ -32,16 +32,16 @@ async def lifespan(app: FastAPI):
     tracer_config = Config(
         config={
             'sampler': {
-                'type': 'const',
-                'param': 1,
+                'type': config.jaeger.sampler_type,  # type: ignore
+                'param': config.jaeger.sampler_param,  # type: ignore
             },
             'local_agent': {
-                'reporting_host': 'localhost',
-                'reporting_port': '6831',
+                'reporting_host': config.jaeger.host,  # type: ignore
+                'reporting_port': config.jaeger.port,  # type: ignore
             },
-            'logging': True,
+            'logging': config.jaeger.logging,  # type: ignore
         },
-        service_name='jaeger_test',
+        service_name=config.jaeger.service_name,  # type: ignore
         validate=True,
     )
     tracer = tracer_config.initialize_tracer()

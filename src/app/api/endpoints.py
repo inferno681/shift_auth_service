@@ -11,6 +11,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from opentracing import global_tracer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemes import (
@@ -38,13 +39,15 @@ async def registration(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Эндпоинт регистрации пользователя."""
-    return UserToken(
-        token=await AuthService.registration(
-            login=user.login,
-            password=user.password,
-            session=session,
-        ),
-    )
+    with global_tracer().start_active_span('register_user') as scope:
+        scope.span.set_tag('login', user.login)
+        return UserToken(
+            token=await AuthService.registration(
+                login=user.login,
+                password=user.password,
+                session=session,
+            ),
+        )
 
 
 @router_auth.post('/auth', response_model=UserToken)
@@ -53,13 +56,15 @@ async def authentication(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Эндпоинт аутентификации пользователя."""
-    return UserToken(
-        token=await AuthService.authentication(
-            login=user.login,
-            password=user.password,
-            session=session,
-        ),
-    )
+    with global_tracer().start_active_span('login_user') as scope:
+        scope.span.set_tag('login', user.login)
+        return UserToken(
+            token=await AuthService.authentication(
+                login=user.login,
+                password=user.password,
+                session=session,
+            ),
+        )
 
 
 @router_check.post('/check_token', response_model=UserTokenCheck)
@@ -68,7 +73,9 @@ async def check_token(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Эндпоинт проверки токена пользователя."""
-    return await AuthService.check_token(token.token, session)
+    with global_tracer().start_active_span('check_token') as scope:
+        scope.span.set_tag('token', token.token[:10] + '...')
+        return await AuthService.check_token(token.token, session)
 
 
 @router_healthz.get('/healthz/ready', response_model=IsReady)
@@ -84,32 +91,37 @@ async def verify(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Эндпоинт для загрузки фото."""
-    if file.filename is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=FILENAME_ERROR,
+    with global_tracer().start_active_span('photo_upload') as scope:
+        if file.filename is None:
+            scope.span.set_tag('error', FILENAME_ERROR)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=FILENAME_ERROR,
+            )
+        file_extension = os.path.splitext(file.filename)[1]
+        if file_extension not in config.service.acceptable_formats:  # type: ignore # noqa: E501
+            scope.span.set_tag('error', 'wrong file format')
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=WRONG_IMAGE_FORMAT.format(extension=file_extension),
+            )
+        file_path = (
+            f'{config.service.photo_directory}/'  # type: ignore
+            f'{uuid1()}{file_extension}'
         )
-    file_extension = os.path.splitext(file.filename)[1]
-    if file_extension not in config.service.acceptable_formats:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=WRONG_IMAGE_FORMAT.format(extension=file_extension),
+        try:
+            async with aiofiles.open(file_path, 'wb') as photo:
+                await photo.write(await file.read())
+        except Exception:
+            scope.span.set_tag('error', UPLOAD_ERROR)
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                detail=UPLOAD_ERROR,
+            )
+        scope.span.set_tag('file path', file_path)
+        await producer.send_message(
+            config.service.kafka_topic,  # type: ignore
+            {user_id: file_path},
         )
-    file_path = (
-        f'{config.service.photo_directory}/'  # type: ignore
-        f'{uuid1()}{file_extension}'
-    )
-    try:
-        async with aiofiles.open(file_path, 'wb') as photo:
-            await photo.write(await file.read())
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail=UPLOAD_ERROR,
-        )
-    await producer.send_message(
-        config.service.kafka_topic,  # type: ignore
-        {user_id: file_path},
-    )
-    await AuthService.verify(user_id, session)
-    return KafkaResponse
+        await AuthService.verify(user_id, session)
+        return KafkaResponse
