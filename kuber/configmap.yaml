@@ -20,8 +20,6 @@ data:
       db_name: vstakrotskij
       db_username: username
       db_echo: False
-      tracer_host: "jaeger-query-service"
-      tracer_port: 6831
       tags_metadata_auth:
         name: "Auth"
         description: "Регистрация, аутентификация"
@@ -34,3 +32,10 @@ data:
       tags_metadata_verify:
         name: "Verify"
         description: "Верификация пользователя по фото"
+    jaeger:
+      service_name: "auth_service"
+      host: "jaeger-query-service"
+      port: 6831
+      logging: True
+      sampler_type: "const"
+      sampler_param: 1
