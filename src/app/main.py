@@ -10,8 +10,8 @@ from opentracing import (
     InvalidCarrierException,
     SpanContextCorruptedException,
     global_tracer,
-    tags,
     propagation,
+    tags,
 )
 from prometheus_client import make_asgi_app
 
