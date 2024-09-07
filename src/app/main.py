@@ -6,7 +6,13 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI, Request
 from jaeger_client import Config
-from opentracing import Format, tags
+from opentracing import (
+    InvalidCarrierException,
+    SpanContextCorruptedException,
+    global_tracer,
+    tags,
+    propagation,
+)
 from prometheus_client import make_asgi_app
 
 from app.api import router
@@ -98,14 +104,22 @@ async def metrics_middleware(request: Request, call_next):
 @app.middleware('http')
 async def tracing_middleware(request: Request, call_next):
     """Middleware для трейсинга."""
-    tracer = request.app.state.jaeger_tracer
-    span_ctx = tracer.extract(Format.HTTP_HEADERS, request.headers)
+    path = request.url.path
+    if path.endswith(('/ready', '/metrics', '/docs', '/openapi.json')):
+        return await call_next(request)
+    try:
+        span_ctx = global_tracer().extract(
+            propagation.Format.HTTP_HEADERS,
+            dict(request.headers),
+        )
+    except (InvalidCarrierException, SpanContextCorruptedException):
+        span_ctx = None
     span_tags = {
         tags.SPAN_KIND: tags.SPAN_KIND_RPC_SERVER,
         tags.HTTP_METHOD: request.method,
         tags.HTTP_URL: str(request.url),
     }
-    with tracer.start_active_span(
+    with global_tracer().start_active_span(
         f'transactions_{request.method}_{request.url.path}',
         child_of=span_ctx,
         tags=span_tags,

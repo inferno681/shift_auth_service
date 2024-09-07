@@ -102,9 +102,9 @@ app:
           name: "Verify"
           description: "Верификация пользователя по фото"
       jaeger:
-        service_name: "auth_service"
-        host: "jaeger-query-service"
-        port: 6831
+        service_name: "stakrotckii_auth_service"
+        host: "infra-jaeger-agent"
+        port: 5775
         logging: True
         sampler_type: "const"
         sampler_param: 1
