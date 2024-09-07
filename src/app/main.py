@@ -105,7 +105,7 @@ async def metrics_middleware(request: Request, call_next):
 async def tracing_middleware(request: Request, call_next):
     """Middleware для трейсинга."""
     path = request.url.path
-    if path.endswith(('/ready', '/metrics', '/docs', '/openapi.json')):
+    if path.endswith(('/ready', '/metrics/', '/docs', '/openapi.json')):
         return await call_next(request)
     try:
         span_ctx = global_tracer().extract(
