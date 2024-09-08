@@ -1,15 +1,13 @@
 import pytest
-from sqlalchemy import text
 
-from app.db.database import engine
+from app.main import app
 from app.service import AuthService
 
 
 @pytest.fixture()
 async def delete_token():
     """Удаление токена из бд."""
-    async with engine.connect() as conn:
-        await conn.execute(text('UPDATE token SET token = NULL WHERE id = 1'))
+    await app.state.redis.delete(1)
 
 
 @pytest.fixture

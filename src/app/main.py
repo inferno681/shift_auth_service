@@ -14,6 +14,7 @@ from opentracing import (
     tags,
 )
 from prometheus_client import make_asgi_app
+from redis.asyncio import Redis
 
 from app.api import router
 from app.metrics import (
@@ -33,8 +34,11 @@ async def lifespan(app: FastAPI):
     """Запуск и остановка продьюсера кафка, создание директории для фото."""
     if not os.path.exists(config.service.photo_directory):  # type: ignore
         os.makedirs(config.service.photo_directory)  # type: ignore
+        log.info('Directory created')
+
     await producer.start()
-    log.info('kafka producer started')
+    log.info('Kafka producer started')
+
     tracer_config = Config(
         config={
             'sampler': {
@@ -52,9 +56,27 @@ async def lifespan(app: FastAPI):
     )
     tracer = tracer_config.initialize_tracer()
     app.state.jaeger_tracer = tracer
+    log.info('Tracer client  initialized')
+
+    redis = await Redis.from_url(
+        config.redis.url,  # type: ignore
+        db=config.redis.db,  # type: ignore
+        decode_responses=config.redis.decode_responses,  # type: ignore
+    )
+    app.state.redis = redis
+    log.info('Redis client initialized')
+
     yield
+
     await producer.stop()
     log.info('kafkaproducer stopped')
+
+    if tracer is not None:
+        tracer.close()
+        log.info('Tracer client  closed')
+
+    await redis.aclose()
+    log.info('Redis client closed')
 
 
 tags_metadata = [

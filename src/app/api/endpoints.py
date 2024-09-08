@@ -8,6 +8,7 @@ from fastapi import (
     File,
     Form,
     HTTPException,
+    Request,
     UploadFile,
     status,
 )
@@ -36,6 +37,7 @@ router_verify = APIRouter()
 @router_auth.post('/registration', response_model=UserToken)
 async def registration(
     user: UserCreate,
+    request: Request,
     session: AsyncSession = Depends(get_async_session),
 ):
     """Эндпоинт регистрации пользователя."""
@@ -46,6 +48,7 @@ async def registration(
                 login=user.login,
                 password=user.password,
                 session=session,
+                redis=request.app.state.redis,
             ),
         )
 
@@ -53,6 +56,7 @@ async def registration(
 @router_auth.post('/auth', response_model=UserToken)
 async def authentication(
     user: UserCreate,
+    request: Request,
     session: AsyncSession = Depends(get_async_session),
 ):
     """Эндпоинт аутентификации пользователя."""
@@ -63,6 +67,7 @@ async def authentication(
                 login=user.login,
                 password=user.password,
                 session=session,
+                redis=request.app.state.redis,
             ),
         )
 
@@ -70,12 +75,15 @@ async def authentication(
 @router_check.post('/check_token', response_model=UserTokenCheck)
 async def check_token(
     token: UserTokenCheckRequest,
-    session: AsyncSession = Depends(get_async_session),
+    request: Request,
 ):
     """Эндпоинт проверки токена пользователя."""
     with global_tracer().start_active_span('check_token') as scope:
         scope.span.set_tag('token', token.token[:10] + '...')
-        return await AuthService.check_token(token.token, session)
+        return await AuthService.check_token(
+            token.token,
+            request.app.state.redis,
+        )
 
 
 @router_healthz.get('/healthz/ready', response_model=IsReady)

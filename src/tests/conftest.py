@@ -46,3 +46,4 @@ async def client():
             base_url='http://127.0.0.1:8000/',
         ) as client:
             yield client
+            await app.state.redis.aclose()

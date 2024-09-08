@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "src"
-version = "0.6.1"
+version = "0.7.0"
 description = ""
 authors = ["Vasilii Stakrotckii <inferno681@gmail.com>"]
 readme = "README.md"
@@ -20,6 +20,7 @@ alembic = "^1.13.2"
 prometheus-client = "^0.20.0"
 opentracing = "^2.4.0"
 jaeger-client = "^4.8.0"
+redis = "^5.0.8"
 
 
 [tool.poetry.group.dev.dependencies]
