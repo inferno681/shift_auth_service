@@ -4,13 +4,13 @@ service:
   host: "0.0.0.0"
   port: 8000
   debug: True
-  kafka_host: "localhost"
+  kafka_host: "kafka"
   kafka_port: 9092
   kafka_topic: "faces"
   photo_directory: "./photos"
   acceptable_formats: [".jpg", ".jpeg", ".png"]
   token_ttl: 3600
-  db_hostname: "localhost"
+  db_hostname: "db"
   db_port: 5432
   db_name: postgres
   db_username: postgres
@@ -37,6 +37,6 @@ jaeger:
   sampler_param: 1
 
 redis:
-  url: "redis://localhost:6379"
+  url: "redis://redis:6379"
   db: 0
   decode_responses: True
