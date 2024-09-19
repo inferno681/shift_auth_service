@@ -78,6 +78,15 @@ docker compose up
 - Команда для запуска тестов:
 
 ```bash
-pytest
+pytest src/tests/integration/
+```
+</details>
+
+<details><summary><h1>Инструкция по применению миграций</h1></summary>
+
+- При активированом виртуальном окружени и доступной бд выполните команду:
+
+```bash
+alembic upgrade head
 ```
 </details>

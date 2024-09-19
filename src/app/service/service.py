@@ -1,73 +1,40 @@
-from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from decimal import Decimal
-from itertools import count
 
 import bcrypt
 import jwt
 from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from app.constants import (
-    DEFAULT_BALANCE,
     ENCODING_FORMAT,
     INVALID_TOKEN_MESSAGE,
     TOKEN_EXPIRED_MESSAGE,
-    TOKEN_NOT_FOUND,
     USER_EXISTS_MESSAGE,
     USER_NOT_FOUND,
 )
+from app.db import Token, User
 from config import config
-
-users = []  # type: ignore
-tokens = []  # type: ignore
-_id_counter = count(1)
-
-
-@dataclass
-class User:
-    """Класс пользователя."""
-
-    id: int = field(default_factory=lambda: next(_id_counter), init=False)
-    login: str
-    hashed_password: str
-    balance: Decimal = field(init=False, default=Decimal(DEFAULT_BALANCE))
-    is_verified: bool = field(init=False, default=False)
-
-
-@dataclass
-class Token:
-    """Сущность для хранения токена."""
-
-    user_id: int
-    token: str
 
 
 class TokenService:
     """Сервис работы с токеном."""
 
     @staticmethod
-    def get_token(user_id: int) -> str | None:
+    async def get_token(user_id: int, session: AsyncSession) -> str | None:
         """Проверка наличия токена пользователя."""
-        token = next(
-            (token.token for token in tokens if token.user_id == user_id),
-            None,
+        token = await session.execute(
+            select(Token.token).where(Token.user_id == user_id),
         )
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=TOKEN_NOT_FOUND,
-            )
-        return token
+        return token.scalar_one_or_none()
 
     @staticmethod
-    def create_and_put_token(user_id: int) -> str:
+    async def create_and_put_token(user_id: int, session: AsyncSession) -> str:
         """Создание и отправка токена в хранилище."""
-        token = Token(
-            user_id=user_id,
-            token=AuthService.generate_jwt_token(user_id),
-        )
-        tokens.append(token)
-        return token.token
+        token = AuthService.generate_jwt_token(user_id)
+        session.add(Token(user_id=user_id, token=token))
+        await session.commit()
+        return token
 
     @staticmethod
     def is_token_expired(token: str) -> bool:
@@ -75,18 +42,19 @@ class TokenService:
         try:
             AuthService.decode_jwt_token(token)
         except jwt.ExpiredSignatureError:
-            return False
-        return True
+            return True
+        return False
 
     @staticmethod
-    def update_token(user_id: int) -> str:
+    async def update_token(user_id: int, session: AsyncSession) -> str:
         """Обновление существующего токена в хранилище."""
-        token = next((token for token in tokens if token.user_id == user_id))
-        token.token = AuthService.generate_jwt_token(user_id)
-        return token.token
+        token = AuthService.generate_jwt_token(user_id)
+        Token(user_id=user_id, token=token)
+        await session.commit()
+        return token
 
     @staticmethod
-    def check_token(token: str) -> dict:
+    async def check_token(token: str, session: AsyncSession) -> dict:
         """Проверка токена."""
         response = {'user_id': None, 'is_token_valid': False}
         try:
@@ -96,7 +64,7 @@ class TokenService:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=str(exeption),
             )
-        if user_id and token == TokenService.get_token(user_id):
+        if user_id and token == await TokenService.get_token(user_id, session):
             response['user_id'] = user_id
             response['is_token_valid'] = True
         return response
@@ -148,51 +116,74 @@ class AuthService(TokenService):
         )
 
     @staticmethod
-    def registration(login, password):
+    async def registration(
+        login: str,
+        password: str,
+        session: AsyncSession,
+    ) -> str:
         """Регистрация пользователя."""
-        if next((user for user in users if user.login == login), None):
+        query_result = await session.execute(
+            select(User).where(User.login == login),
+        )
+        if query_result.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=USER_EXISTS_MESSAGE.format(login=login),
             )
         hashed_password = AuthService.hash_password(password)
         user = User(login=login, hashed_password=hashed_password)
-        users.append(user)
+        session.add(user)
+        await session.flush()
         token = AuthService.generate_jwt_token(user.id)
-        tokens.append(Token(user.id, token))
+        session.add(Token(user_id=user.id, token=token))
+        await session.commit()
         return token
 
     @staticmethod
-    def is_user_exists(login: str, password: str) -> int | None:
+    async def get_user(
+        login: str,
+        password: str,
+        session: AsyncSession,
+    ) -> User:
         """Проверка наличия пользователя в бд."""
-        user = next((user for user in users if user.login == login), None)
+        query_result = await session.execute(
+            select(User).where(User.login == login),
+        )
+        user = query_result.scalar_one_or_none()
         if user and AuthService.check_password(password, user.hashed_password):
-            return user.id
+            return user
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=USER_NOT_FOUND,
         )
 
     @staticmethod
-    def authentication(login: str, password: str) -> str | None:
+    async def authentication(
+        login: str,
+        password: str,
+        session: AsyncSession,
+    ) -> str | None:
         """Аутентификация пользователя."""
-        user_id = AuthService.is_user_exists(login, password)
-        if not user_id:
-            return None
-        token = TokenService.get_token(user_id)
+        user = await AuthService.get_user(login, password, session)
+        user_id = user.id
+        token = await TokenService.get_token(user_id, session)
         if not token:
-            return TokenService.create_and_put_token(user_id)
+            return await TokenService.create_and_put_token(user_id, session)
         if TokenService.is_token_expired(token):
-            return TokenService.update_token(user_id)
+            return await TokenService.update_token(user_id, session)
         return token
 
     @staticmethod
-    def verify(user_id: int):
+    async def verify(user_id: int, session: AsyncSession):
         """Верификация пользователя в хранилище."""
-        user = next((user for user in users if user.id == user_id), None)
+        query_result = await session.execute(
+            select(User).where(User.id == user_id),
+        )
+        user = query_result.scalar_one_or_none()
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=USER_NOT_FOUND,
             )
         user.is_verified = True
+        await session.commit()

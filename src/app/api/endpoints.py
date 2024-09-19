@@ -2,7 +2,16 @@ import os
 from uuid import uuid1
 
 import aiofiles
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    status,
+)
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemes import (
     IsReady,
@@ -13,6 +22,7 @@ from app.api.schemes import (
     UserTokenCheckRequest,
 )
 from app.constants import FILENAME_ERROR, UPLOAD_ERROR, WRONG_IMAGE_FORMAT
+from app.db import get_async_session
 from app.service import AuthService, producer
 from config import config
 
@@ -23,31 +33,42 @@ router_verify = APIRouter()
 
 
 @router_auth.post('/registration', response_model=UserToken)
-async def registration(user: UserCreate):
+async def registration(
+    user: UserCreate,
+    session: AsyncSession = Depends(get_async_session),
+):
     """Эндпоинт регистрации пользователя."""
     return UserToken(
-        token=AuthService.registration(
+        token=await AuthService.registration(
             login=user.login,
             password=user.password,
+            session=session,
         ),
     )
 
 
 @router_auth.post('/auth', response_model=UserToken)
-async def authentication(user: UserCreate):
+async def authentication(
+    user: UserCreate,
+    session: AsyncSession = Depends(get_async_session),
+):
     """Эндпоинт аутентификации пользователя."""
     return UserToken(
-        token=AuthService.authentication(
+        token=await AuthService.authentication(
             login=user.login,
             password=user.password,
+            session=session,
         ),
     )
 
 
 @router_check.post('/check_token', response_model=UserTokenCheck)
-async def check_token(token: UserTokenCheckRequest):
+async def check_token(
+    token: UserTokenCheckRequest,
+    session: AsyncSession = Depends(get_async_session),
+):
     """Эндпоинт проверки токена пользователя."""
-    return AuthService.check_token(token.token)
+    return await AuthService.check_token(token.token, session)
 
 
 @router_healthz.get('/healthz/ready', response_model=IsReady)
@@ -57,7 +78,11 @@ async def check_health():
 
 
 @router_verify.post('/verify', response_model=KafkaResponse)
-async def verify(user_id: int = Form(gt=0), file: UploadFile = File()):
+async def verify(
+    user_id: int = Form(gt=0),
+    file: UploadFile = File(),
+    session: AsyncSession = Depends(get_async_session),
+):
     """Эндпоинт для загрузки фото."""
     if file.filename is None:
         raise HTTPException(
@@ -83,5 +108,5 @@ async def verify(user_id: int = Form(gt=0), file: UploadFile = File()):
             detail=UPLOAD_ERROR,
         )
     await producer.send_message('faces', {user_id: file_path})
-    AuthService.verify(user_id)
+    await AuthService.verify(user_id, session)
     return KafkaResponse

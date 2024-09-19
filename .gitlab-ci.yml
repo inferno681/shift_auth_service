@@ -1,13 +1,17 @@
-default:
+.python_base:
   image: python:3.12-slim
   before_script:
-    - apt-get update
-    - apt-get install --no-install-recommends -y libgl1-mesa-glx libglib2.0-dev
-    - python --version ; pip --version
     - pip install poetry
     - poetry config virtualenvs.create false
     - poetry install
-    - mkdir -p "./photos"
+  retry: 2
+
+.docker_base:
+  image: docker:dind
+  before_script:
+    - docker compose -f docker-compose-test.yaml up -d --build
+  after_script:
+    - docker compose -f docker-compose-test.yaml down
   retry: 2
 
 variables:
@@ -22,6 +26,7 @@ stages:
 
 lint:
   stage: lint
+  extends: .python_base
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event"
       changes:
@@ -33,6 +38,7 @@ lint:
 
 mypy:
   stage: lint
+  extends: .python_base
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event"
       changes:
@@ -44,19 +50,22 @@ mypy:
 
 test:
   stage: test
+  extends: .docker_base
   script:
-    - poetry run pytest --cov
+    - docker compose -f docker-compose-test.yaml exec auth_service pytest --cov --cov-fail-under=90 --cov-report term-missing
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event"
 
 pre_commit:
   stage: pre_commit
+  extends: .docker_base
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
-    - poetry run flake8 src/
-    - poetry run mypy src/
-    - poetry run pytest --cov --cov-fail-under=90 --cov-report term --cov-report xml:coverage.xml
+    - docker compose -f docker-compose-test.yaml exec auth_service flake8 src/
+    - docker compose -f docker-compose-test.yaml exec auth_service mypy src/
+    - docker compose -f docker-compose-test.yaml exec auth_service pytest --cov --cov-fail-under=90 --cov-report term-missing --cov-report xml:coverage.xml
+    - docker cp $(docker compose -f docker-compose-test.yaml ps -q auth_service):/app/coverage.xml ./coverage.xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     reports:
@@ -66,8 +75,10 @@ pre_commit:
 
 coverage:
   stage: coverage
+  extends: .docker_base
   script:
-    - poetry run pytest --cov --cov-report term --cov-report xml:coverage.xml
+    - docker compose -f docker-compose-test.yaml exec auth_service pytest --cov --cov-fail-under=90 --cov-report term-missing --cov-report xml:coverage.xml
+    - docker cp $(docker compose -f docker-compose-test.yaml ps -q auth_service):/app/coverage.xml ./coverage.xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     reports:

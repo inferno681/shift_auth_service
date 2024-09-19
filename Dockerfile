@@ -10,7 +10,13 @@ RUN poetry config virtualenvs.create false
 
 RUN poetry install --only main --no-interaction --no-ansi
 
-COPY ./src  ./src
+RUN mkdir -p ./src
+
+COPY ./src/config  ./src/config
+
+COPY ./alembic.ini  ./alembic.ini
+
+COPY ./src/app  ./src/app
 
 ENV PYTHONPATH=/app/src/
 

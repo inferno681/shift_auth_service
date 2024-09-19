@@ -8,6 +8,11 @@ service:
   kafka_port: 9092
   photo_directory: "./photos"
   acceptable_formats: [".jpg", ".jpeg", ".png"]
+  db_hostname: "db"
+  db_port: 5432
+  db_name: postgres
+  db_username: postgres
+  db_echo: False
   tags_metadata_auth:
     name: "Auth"
     description: "Регистрация, аутентификация"

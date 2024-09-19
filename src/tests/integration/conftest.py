@@ -1,38 +1,15 @@
 import pytest
-from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 
-from app.main import app
-from app.service import AuthService, producer, users
-
-
-@pytest.fixture
-def anyio_backend():
-    """Бэкэнд для тестирования."""
-    return 'asyncio'
+from app.db.database import engine
+from app.service import AuthService
 
 
-@pytest.fixture
-async def is_kafka_available():
-    """Фикстура для проверки доступности Kafka."""
-    return await producer.check()
-
-
-@pytest.fixture(autouse=True)
-def user_storage():
-    """Фикстура для очистки хранилища перед каждым текстом."""
-    users.clear()
-    yield
-    users.clear()
-
-
-@pytest.fixture
-async def client():
-    """Фикстура клиента."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url='http://127.0.0.1:8000/api/',
-    ) as client:
-        yield client
+@pytest.fixture()
+async def delete_token():
+    """Удаление токена из бд."""
+    async with engine.connect() as conn:
+        await conn.execute(text('UPDATE token SET token = NULL WHERE id = 1'))
 
 
 @pytest.fixture
@@ -74,7 +51,7 @@ def wrong_user_data(request):
 @pytest.fixture()
 def no_user_token():
     """Фикстура с токеном несуществующего пользователя."""
-    return AuthService.generate_jwt_token(5)
+    return AuthService.generate_jwt_token(100)
 
 
 @pytest.fixture
