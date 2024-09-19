@@ -1,15 +1,13 @@
 import pytest
-from sqlalchemy import text
 
-from app.db.database import engine
+from app.main import app
 from app.service import AuthService
 
 
 @pytest.fixture()
 async def delete_token():
     """Удаление токена из бд."""
-    async with engine.connect() as conn:
-        await conn.execute(text('UPDATE token SET token = NULL WHERE id = 1'))
+    await app.state.redis.delete(1)
 
 
 @pytest.fixture
@@ -21,19 +19,25 @@ def test_user():
 @pytest.fixture
 def registration_link():
     """Фикстура со ссылкой на регистрацию."""
-    return '/registration'
+    return '/api/registration'
 
 
 @pytest.fixture
 def auth_link():
     """Фикстура со ссылкой на аутентификацию."""
-    return '/auth'
+    return '/api/auth'
 
 
 @pytest.fixture
 def check_link():
     """Фикстура со ссылкой на проверку токена."""
-    return '/check_token'
+    return '/api/check_token'
+
+
+@pytest.fixture
+def metrics_link():
+    """Фикстура со ссылкой на эндпоинт метрик."""
+    return '/metrics/'
 
 
 @pytest.fixture(
@@ -57,13 +61,13 @@ def no_user_token():
 @pytest.fixture
 def check_health_link():
     """Фикстура со ссылкой на проверку готовности сервиса."""
-    return '/healthz/ready'
+    return '/api/healthz/ready'
 
 
 @pytest.fixture
 def verify_link():
     """Фикстура со ссылкой на загрузку фото."""
-    return '/verify'
+    return '/api/verify'
 
 
 @pytest.fixture

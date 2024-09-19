@@ -41,6 +41,7 @@ class _ServiceSettings(_SettingsModel):
     kafka_topic: str
     photo_directory: str
     acceptable_formats: list[str]
+    token_ttl: int
     db_hostname: str
     db_port: int
     db_name: str
@@ -68,10 +69,31 @@ class _SettingsSecret(BaseSettings):
     )
 
 
+class _JaegerSettings(_SettingsModel):
+    """Валидация настроек настроек jaeger."""
+
+    service_name: str
+    host: str
+    port: int
+    logging: bool
+    sampler_type: str
+    sampler_param: float | int
+
+
+class _RedisSettings(_SettingsModel):
+    """Валидация настроек настроек redis."""
+
+    url: str
+    db: int
+    decode_responses: bool
+
+
 class Settings(_SettingsModel, _SettingsSecret):
     """Настройки сервиса."""
 
     service: _ServiceSettings
+    jaeger: _JaegerSettings
+    redis: _RedisSettings
 
     @property
     def database_url(self):

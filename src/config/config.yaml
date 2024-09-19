@@ -9,6 +9,7 @@ service:
   kafka_topic: "faces"
   photo_directory: "./photos"
   acceptable_formats: [".jpg", ".jpeg", ".png"]
+  token_ttl: 3600
   db_hostname: "db"
   db_port: 5432
   db_name: postgres
@@ -26,3 +27,16 @@ service:
   tags_metadata_verify:
     name: "Verify"
     description: "Верификация пользователя по фото"
+
+jaeger:
+  service_name: "auth_service"
+  host: "jaeger"
+  port: 6831
+  logging: True
+  sampler_type: "const"
+  sampler_param: 1
+
+redis:
+  url: "redis://redis:6379"
+  db: 0
+  decode_responses: True

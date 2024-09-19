@@ -1,11 +1,28 @@
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from jaeger_client import Config
+from opentracing import (
+    InvalidCarrierException,
+    SpanContextCorruptedException,
+    global_tracer,
+    propagation,
+    tags,
+)
+from prometheus_client import make_asgi_app
+from redis.asyncio import Redis
 
 from app.api import router
+from app.metrics import (
+    AUTH_RESULT,
+    READY_PROBE,
+    REQUEST_COUNT,
+    REQUEST_DURATION,
+)
 from app.service import producer
 from config import config
 
@@ -17,11 +34,49 @@ async def lifespan(app: FastAPI):
     """Запуск и остановка продьюсера кафка, создание директории для фото."""
     if not os.path.exists(config.service.photo_directory):  # type: ignore
         os.makedirs(config.service.photo_directory)  # type: ignore
+        log.info('Directory created')
+
     await producer.start()
-    log.info('kafka producer started')
+    log.info('Kafka producer started')
+
+    tracer_config = Config(
+        config={
+            'sampler': {
+                'type': config.jaeger.sampler_type,  # type: ignore
+                'param': config.jaeger.sampler_param,  # type: ignore
+            },
+            'local_agent': {
+                'reporting_host': config.jaeger.host,  # type: ignore
+                'reporting_port': config.jaeger.port,  # type: ignore
+            },
+            'logging': config.jaeger.logging,  # type: ignore
+        },
+        service_name=config.jaeger.service_name,  # type: ignore
+        validate=True,
+    )
+    tracer = tracer_config.initialize_tracer()
+    app.state.jaeger_tracer = tracer
+    log.info('Tracer client  initialized')
+
+    redis = await Redis.from_url(
+        config.redis.url,  # type: ignore
+        db=config.redis.db,  # type: ignore
+        decode_responses=config.redis.decode_responses,  # type: ignore
+    )
+    app.state.redis = redis
+    log.info('Redis client initialized')
+
     yield
+
     await producer.stop()
     log.info('kafkaproducer stopped')
+
+    if tracer is not None:
+        tracer.close()
+        log.info('Tracer client  closed')
+
+    await redis.aclose()
+    log.info('Redis client closed')
 
 
 tags_metadata = [
@@ -39,6 +94,61 @@ app = FastAPI(
 )  # type: ignore
 
 app.include_router(router, prefix='/api')
+
+metrics_app = make_asgi_app()
+app.mount('/metrics', metrics_app)
+
+
+@app.middleware('http')
+async def metrics_middleware(request: Request, call_next):
+    """Middleware для формирования метрик."""
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+
+    REQUEST_DURATION.labels(
+        method=request.method,
+        endpoint=request.url.path,
+    ).observe(process_time)
+    REQUEST_COUNT.labels(
+        method=request.method,
+        endpoint=request.url.path,
+        status=response.status_code,
+    ).inc()
+    if request.url.path == '/api/healthz/ready':
+        READY_PROBE.labels(status=response.status_code).inc()
+    if request.url.path == '/api/auth':
+        AUTH_RESULT.labels(status=response.status_code).inc()
+
+    return response
+
+
+@app.middleware('http')
+async def tracing_middleware(request: Request, call_next):
+    """Middleware для трейсинга."""
+    path = request.url.path
+    if path.endswith(('/ready', '/metrics/', '/docs', '/openapi.json')):
+        return await call_next(request)
+    try:
+        span_ctx = global_tracer().extract(
+            propagation.Format.HTTP_HEADERS,
+            dict(request.headers),
+        )
+    except (InvalidCarrierException, SpanContextCorruptedException):
+        span_ctx = None
+    span_tags = {
+        tags.SPAN_KIND: tags.SPAN_KIND_RPC_SERVER,
+        tags.HTTP_METHOD: request.method,
+        tags.HTTP_URL: str(request.url),
+    }
+    with global_tracer().start_active_span(
+        f'transactions_{request.method}_{request.url.path}',
+        child_of=span_ctx,
+        tags=span_tags,
+    ) as scope:
+        response = await call_next(request)
+        scope.span.set_tag(tags.HTTP_STATUS_CODE, response.status_code)
+        return response
 
 
 if __name__ == '__main__':

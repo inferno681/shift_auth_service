@@ -57,3 +57,9 @@ services:
         condition: service_healthy
       zookeeper:
         condition: service_started
+
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 6379:6379

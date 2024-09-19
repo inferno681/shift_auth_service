@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "src"
-version = "0.4.0"
+version = "0.7.0"
 description = ""
 authors = ["Vasilii Stakrotckii <inferno681@gmail.com>"]
 readme = "README.md"
@@ -17,6 +17,10 @@ aiofiles = "^24.1.0"
 sqlalchemy = "^2.0.32"
 asyncpg = "^0.29.0"
 alembic = "^1.13.2"
+prometheus-client = "^0.20.0"
+opentracing = "^2.4.0"
+jaeger-client = "^4.8.0"
+redis = "^5.0.8"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -32,6 +36,7 @@ types-aiofiles = "^24.1.0.20240626"
 sqlalchemy-utils = "^0.41.2"
 psycopg2-binary = "^2.9.9"
 types-sqlalchemy-utils = "^1.1.0"
+types-opentracing = "^2.4.10.6"
 
 [build-system]
 requires = ["poetry-core"]

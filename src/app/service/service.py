@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import bcrypt
 import jwt
 from fastapi import HTTPException, status
+from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -13,7 +14,7 @@ from app.constants import (
     USER_EXISTS_MESSAGE,
     USER_NOT_FOUND,
 )
-from app.db import Token, User
+from app.db import User
 from config import config
 
 
@@ -21,19 +22,15 @@ class TokenService:
     """Сервис работы с токеном."""
 
     @staticmethod
-    async def get_token(user_id: int, session: AsyncSession) -> str | None:
+    async def get_token(user_id: int, redis: Redis) -> str | None:
         """Проверка наличия токена пользователя."""
-        token = await session.execute(
-            select(Token.token).where(Token.user_id == user_id),
-        )
-        return token.scalar_one_or_none()
+        return await redis.get(str(user_id))
 
     @staticmethod
-    async def create_and_put_token(user_id: int, session: AsyncSession) -> str:
+    async def create_and_put_token(user_id: int, redis: Redis) -> str:
         """Создание и отправка токена в хранилище."""
         token = AuthService.generate_jwt_token(user_id)
-        session.add(Token(user_id=user_id, token=token))
-        await session.commit()
+        await redis.set(user_id, token, config.service.token_ttl)  # type: ignore # noqa: E501
         return token
 
     @staticmethod
@@ -46,15 +43,14 @@ class TokenService:
         return False
 
     @staticmethod
-    async def update_token(user_id: int, session: AsyncSession) -> str:
+    async def update_token(user_id: int, redis: Redis) -> str:
         """Обновление существующего токена в хранилище."""
         token = AuthService.generate_jwt_token(user_id)
-        Token(user_id=user_id, token=token)
-        await session.commit()
+        await redis.set(user_id, token, config.service.token_ttl)  # type: ignore # noqa: E501
         return token
 
     @staticmethod
-    async def check_token(token: str, session: AsyncSession) -> dict:
+    async def check_token(token: str, redis: Redis) -> dict:
         """Проверка токена."""
         response = {'user_id': None, 'is_token_valid': False}
         try:
@@ -64,7 +60,7 @@ class TokenService:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=str(exeption),
             )
-        if user_id and token == await TokenService.get_token(user_id, session):
+        if user_id and token == await TokenService.get_token(user_id, redis):
             response['user_id'] = user_id
             response['is_token_valid'] = True
         return response
@@ -120,6 +116,7 @@ class AuthService(TokenService):
         login: str,
         password: str,
         session: AsyncSession,
+        redis: Redis,
     ) -> str:
         """Регистрация пользователя."""
         query_result = await session.execute(
@@ -133,10 +130,10 @@ class AuthService(TokenService):
         hashed_password = AuthService.hash_password(password)
         user = User(login=login, hashed_password=hashed_password)
         session.add(user)
-        await session.flush()
-        token = AuthService.generate_jwt_token(user.id)
-        session.add(Token(user_id=user.id, token=token))
         await session.commit()
+        await session.refresh(user)
+        token = AuthService.generate_jwt_token(user.id)
+        await redis.set(user.id, token, config.service.token_ttl)  # type: ignore # noqa: E501
         return token
 
     @staticmethod
@@ -162,15 +159,16 @@ class AuthService(TokenService):
         login: str,
         password: str,
         session: AsyncSession,
+        redis: Redis,
     ) -> str | None:
         """Аутентификация пользователя."""
         user = await AuthService.get_user(login, password, session)
         user_id = user.id
-        token = await TokenService.get_token(user_id, session)
+        token = await TokenService.get_token(user_id, redis)
         if not token:
-            return await TokenService.create_and_put_token(user_id, session)
+            return await TokenService.create_and_put_token(user_id, redis)
         if TokenService.is_token_expired(token):
-            return await TokenService.update_token(user_id, session)
+            return await TokenService.update_token(user_id, redis)
         return token
 
     @staticmethod

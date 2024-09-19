@@ -8,6 +8,13 @@ from app.constants import (
     WRONG_IMAGE_FORMAT,
 )
 from app.db.database import engine
+from app.main import app
+from app.metrics import (
+    AUTH_RESULT,
+    READY_PROBE,
+    REQUEST_COUNT,
+    REQUEST_DURATION,
+)
 
 
 @pytest.mark.anyio
@@ -19,11 +26,8 @@ async def test_registration(client, test_user, registration_link):
         user = await conn.execute(
             text('SELECT login FROM "user" WHERE id = 1'),
         )
-        token = await conn.execute(
-            text('SELECT token FROM token WHERE user_id = 1'),
-        )
         assert test_user['login'] == user.scalar_one_or_none()
-        assert response.json()['token'] == token.scalar_one_or_none()
+        assert response.json()['token'] == await app.state.redis.get(1)
 
 
 @pytest.mark.anyio
@@ -36,11 +40,8 @@ async def test_authentication(client, test_user, auth_link):
         user = await conn.execute(
             text('SELECT login FROM "user" WHERE id = 1'),
         )
-        token = await conn.execute(
-            text('SELECT token FROM token WHERE user_id = 1'),
-        )
         assert test_user['login'] == user.scalar_one_or_none()
-        assert response.json()['token'] == token.scalar_one_or_none()
+        assert response.json()['token'] == await app.state.redis.get(1)
 
 
 @pytest.mark.anyio
@@ -141,7 +142,19 @@ async def test_authentication_without_token(
     delete_token,
 ):
     """Тест аутентификации пользователя без токена в бд."""
+    assert await app.state.redis.get(1) is None
     response = await client.post(auth_link, json=test_user)
     assert response.status_code == 200
     assert 'token' in response.json()
     assert response.json()['token'] is not None
+
+
+@pytest.mark.anyio
+async def test_metrics(client, metrics_link):
+    """Тест эндпоинта для сбора метрик."""
+    response = await client.get(metrics_link)
+    assert response.status_code == 200
+    assert READY_PROBE._documentation in response.text
+    assert REQUEST_COUNT._documentation in response.text
+    assert REQUEST_DURATION._documentation in response.text
+    assert AUTH_RESULT._documentation in response.text
