@@ -107,6 +107,9 @@ async def verify(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail=UPLOAD_ERROR,
         )
-    await producer.send_message('faces', {user_id: file_path})
+    await producer.send_message(
+        config.service.kafka_topic,  # type: ignore
+        {user_id: file_path},
+    )
     await AuthService.verify(user_id, session)
     return KafkaResponse

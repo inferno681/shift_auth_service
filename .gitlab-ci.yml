@@ -5,6 +5,8 @@
     - poetry config virtualenvs.create false
     - poetry install
   retry: 2
+  tags:
+    - docker
 
 .docker_base:
   image: docker:dind

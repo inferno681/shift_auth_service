@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stakrotckii-auth-service-pod
+  labels:
+    app.kubernetes.io/name: stakrotckii
+    app.kubernetes.io/instance: auth-service-abcxyz
+spec:
+  containers:
+    - image: inferno681/auth_service
+      name: stakrotckii-auth-service-pod-container
+      volumeMounts:
+        - name: auth-service-config-volume
+          mountPath: /app/src/config/config.yaml
+          subPath: config.yaml
+        - mountPath: /app/photos
+          name: photo-storage
+      env:
+        - name: SECRET
+          valueFrom:
+            secretKeyRef:
+              name: stakrotckii-auth-service-secret
+              key: SECRET
+        - name: db_password
+          valueFrom:
+            secretKeyRef:
+              name: stakrotckii-auth-service-secret
+              key: db_password
+      ports:
+        - containerPort: 8000
+      resources:
+        limits:
+          memory: "750Mi"
+          cpu: 200m
+        requests:
+          memory: "350Mi"
+          cpu: 100m
+      readinessProbe:
+        httpGet:
+          path: /api/healthz/ready
+          port: 8000
+        failureThreshold: 10
+        initialDelaySeconds: 3
+        periodSeconds: 2
+  volumes:
+    - name: auth-service-config-volume
+      configMap:
+        name: stakrotckii-auth-service-configmap
+    - name: photo-storage
+      persistentVolumeClaim:
+        claimName: stakrotckii-photo-pvc

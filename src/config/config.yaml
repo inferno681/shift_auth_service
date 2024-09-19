@@ -6,6 +6,7 @@ service:
   debug: True
   kafka_host: "kafka"
   kafka_port: 9092
+  kafka_topic: "faces"
   photo_directory: "./photos"
   acceptable_formats: [".jpg", ".jpeg", ".png"]
   db_hostname: "db"

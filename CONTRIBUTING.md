@@ -90,3 +90,21 @@ pytest src/tests/integration/
 alembic upgrade head
 ```
 </details>
+
+<details><summary><h1>Инструкция по применению манифестов</h1></summary>
+
+- Для загрузки манифестов кубернетис для каждого файла в папке /kuber/ необходимо выполнить следующую команду:
+
+```bash
+kubectl apply -f ./kuber/<filename>.yaml
+```
+</details>
+
+<details><summary><h1>Инструкция по запуску приложения в кубернетис с использованием Helm</h1></summary>
+
+- Выполните следующую команду:
+
+```bash
+helm install <prefix> ./auth-service-chart
+```
+</details>
