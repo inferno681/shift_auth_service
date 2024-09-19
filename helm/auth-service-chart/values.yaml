@@ -1,0 +1,114 @@
+# Default values for auth-service-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: inferno681/auth_service
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  {}
+  # fsGroup: 2000
+
+securityContext:
+  {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources:
+  limits:
+    memory: "750Mi"
+    cpu: "200m"
+  requests:
+    memory: "350Mi"
+    cpu: "100m"
+
+readinessProbe:
+  httpGet:
+    path: /api/healthz/ready
+    port: 8000
+  failureThreshold: 10
+  initialDelaySeconds: 3
+  periodSeconds: 2
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts:
+  - name: auth-service-config-volume
+    mountPath: /app/src/config/config.yaml
+    subPath: config.yaml
+  - name: photo-storage
+    mountPath: /app/photos
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+app:
+  servicePort: 8000
+  data:
+    config.yaml: |
+      service:
+        title: "Auth service"
+        description: "Сервис авторизации"
+        host: "0.0.0.0"
+        port: 8000
+        debug: True
+        kafka_host: "infra-kafka-controller-headless"
+        kafka_port: 9092
+        kafka_topic: "stakrotckii_face_topic"
+        photo_directory: "./photos"
+        acceptable_formats: [".jpg", ".jpeg", ".png"]
+        db_hostname: "postgres-service"
+        db_port: 5432
+        db_name: vstakrotskij
+        db_username: username
+        db_echo: False
+        tags_metadata_auth:
+          name: "Auth"
+          description: "Регистрация, аутентификация"
+        tags_metadata_check:
+          name: "Check"
+          description: "Проверка токена"
+        tags_metadata_health:
+          name: "Health"
+          description: "Проверка доступности сервиса"
+        tags_metadata_verify:
+          name: "Verify"
+          description: "Верификация пользователя по фото"
+  secret_data:
+    SECRET: U0VDUkVU
+    db_password: cGFzc3dvcmQ=
+  pvc_name: stakrotckii-image-pvc
+  pvc_spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Mi
+    storageClassName: yc-network-hdd
