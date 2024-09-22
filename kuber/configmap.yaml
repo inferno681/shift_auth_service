@@ -6,7 +6,7 @@ data:
   config.yaml: |
     service:
       title: "Auth service"
-      description: "Сервис авторизации"
+      description: "Auth service"
       host: "0.0.0.0"
       port: 8000
       debug: True
@@ -22,16 +22,16 @@ data:
       db_echo: False
       tags_metadata_auth:
         name: "Auth"
-        description: "Регистрация, аутентификация"
+        description: "Registration, verification"
       tags_metadata_check:
         name: "Check"
-        description: "Проверка токена"
+        description: "Token check"
       tags_metadata_health:
         name: "Health"
-        description: "Проверка доступности сервиса"
+        description: "Health check"
       tags_metadata_verify:
         name: "Verify"
-        description: "Верификация пользователя по фото"
+        description: "User verification by photo"
     jaeger:
       service_name: "stakrotckii_auth_service"
       host: "infra-jaeger-agent"

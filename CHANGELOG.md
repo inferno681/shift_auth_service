@@ -1,56 +1,56 @@
-# История версий
+# Version History
 
 ## 0.1.0
-### Добавлено
-- Добавлены методы регистрации и аутентификации пользователя
-- Добавлены методы генерации и декодирования JWT токенов
+### Added
+- Added methods for user registration and authentication
+- Added methods for generating and decoding JWT tokens
 
 ## 0.1.1
-### Добавлено
-- Добалена базовая документация к проекту
-### Изменено
-- Изменена структура. Структура тэстов соответствует структуре приложения. Файл main.py переименован в service.py
+### Added
+- Added basic documentation to the project
+### Changed
+- Structure changed. Test structure now matches the application structure. `main.py` file renamed to `service.py`
 
 ## 0.2.0
-### Добавлено
-- Добавлен метод проверкт токена
-- Добавлен API
-- Добавлены интеграционные тесты
-### Изменено
-- Изменена структура. Структура тэстов соответствует структуре приложения. Точка входа - main.py. Вся бизнес-логика перенесена в папку service.
+### Added
+- Added token verification method
+- Added API
+- Added integration tests
+### Changed
+- Structure changed. Test structure now matches the application structure. Entry point is `main.py`. All business logic moved to the `service` folder.
 
 ## 0.2.1
-### Добавлено
-- Добавлен Dockerfile
-- В CI добавлен шаг со сборкой контейнера и загрузкой на dockerhub
+### Added
+- Added Dockerfile
+- Added CI step for container build and push to DockerHub
 
 ## 0.2.2
-### Добавлено
-- Добавлен Health check
+### Added
+- Added Health check
 
 ## 0.3.0
-### Добавлено
-- Добавлена интеграция с Кафка
+### Added
+- Added Kafka integration
 
 ## 0.4.0
-### Добавлено
-- Добавлена база данных
-- Добавлены тесты запросов к базе данных
+### Added
+- Added database
+- Added tests for database queries
 
 ## 0.5.0
-### Добавлено
-- Добавлены манифесты для запуска в кубернетис
-- Добавлены чарты для Helm
+### Added
+- Added manifests for Kubernetes deployment
+- Added Helm charts
 
 ## 0.6.0
-### Добавлено
-- Добавлены метрики для prometheus
+### Added
+- Added metrics for Prometheus
 
 ## 0.6.1
-### Добавлено
-- Добавлена трассировка
+### Added
+- Added tracing
 
 ## 0.7.0
-### Изменено
-- Токены хранятся в Редис
-- Изменена структура базы данных (удалена таблица токенов), создана соответствующая миграция
+### Changed
+- Tokens are now stored in Redis
+- Database structure changed (token table removed), corresponding migration created

@@ -7,13 +7,13 @@ class UserCreate(BaseModel):
     """User registration scheme."""
 
     login: str = Field(
-        description='Логин',
+        description='Login',
         min_length=3,
         max_length=20,  # noqa:WPS432
         pattern='^[a-zA-Z0-9._-]+$',
     )
     password: str = Field(
-        description='Пароль',
+        description='Password',
         min_length=6,
         max_length=100,
     )

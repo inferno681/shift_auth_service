@@ -1,21 +1,21 @@
 # Auth service
 
-Cервис авторизации.
+Authorization service.
 
-## Реализованы следующие возможности
+## Implemented features
 
-### Регистрация
+### Registration
 
-На основе логина, пароля создает в хранилище запись о новом пользователе. В качестве ответа возвращает JWT-токен.
+Based on a login and password, it creates a new user record in the storage. Returns a JWT token as a response.
 
-### Авторизация
+### Authorization
 
-На основе логина и пароля проверяет наличие пользователя в хранилище. Затем:
-если JWT-токена нет в хранилище, то создает его и сохраняет в хранилище;
-если JWT-токен есть в хранилище, обновляет его.
-В качестве ответа возвращает JWT-токен.
-если входящие данные некорректны возвращает None
+Based on a login and password, it checks for the user in the storage. Then:
+- If the JWT token is not in the storage, it creates a new one and saves it to the storage.
+- If the JWT token is already in the storage, it updates it.
+It returns a JWT token as a response.
+If the incoming data is incorrect, it returns `None`.
 
-### Проверка токена
+### Token validation
 
-В ответ на предоставленный токен возвращает id пользователя и ответ - валиден ли токен.
+In response to the provided token, it returns the user ID and a response indicating whether the token is valid.

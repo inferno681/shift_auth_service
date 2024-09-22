@@ -7,6 +7,6 @@ RUN apt-get update \
     libgl1-mesa-glx \
     libglib2.0-dev
 
-# Настройки темы https://github.com/romkatv/powerlevel10k
+# Theme settings https://github.com/romkatv/powerlevel10k
 COPY .p10k.zsh /root/
 COPY .zshrc /root/
