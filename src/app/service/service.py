@@ -19,23 +19,23 @@ from config import config
 
 
 class TokenService:
-    """Сервис работы с токеном."""
+    """Token service."""
 
     @staticmethod
     async def get_token(user_id: int, redis: Redis) -> str | None:
-        """Проверка наличия токена пользователя."""
+        """Get token from redis."""
         return await redis.get(str(user_id))
 
     @staticmethod
     async def create_and_put_token(user_id: int, redis: Redis) -> str:
-        """Создание и отправка токена в хранилище."""
+        """Token creation and sending to redis."""
         token = AuthService.generate_jwt_token(user_id)
         await redis.set(user_id, token, config.service.token_ttl)  # type: ignore # noqa: E501
         return token
 
     @staticmethod
     def is_token_expired(token: str) -> bool:
-        """Проверка срока действия токена."""
+        """Check token expiration."""
         try:
             AuthService.decode_jwt_token(token)
         except jwt.ExpiredSignatureError:
@@ -44,14 +44,14 @@ class TokenService:
 
     @staticmethod
     async def update_token(user_id: int, redis: Redis) -> str:
-        """Обновление существующего токена в хранилище."""
+        """Token update in redis."""
         token = AuthService.generate_jwt_token(user_id)
         await redis.set(user_id, token, config.service.token_ttl)  # type: ignore # noqa: E501
         return token
 
     @staticmethod
     async def check_token(token: str, redis: Redis) -> dict:
-        """Проверка токена."""
+        """Token check method."""
         response = {'user_id': None, 'is_token_valid': False}
         try:
             user_id = AuthService.decode_jwt_token(token)['id']
@@ -67,10 +67,12 @@ class TokenService:
 
     @staticmethod
     def generate_jwt_token(user_id: int) -> str:
-        """Генерация JWT токена."""
+        """Token generation."""
         payload = {
             'id': user_id,
-            'exp': (datetime.now() + timedelta(days=1)).timestamp(),
+            'exp': (
+                datetime.now() + timedelta(seconds=config.service.token_ttl)  # type: ignore # noqa: E501
+            ).timestamp(),
         }
         return jwt.encode(
             payload,
@@ -80,7 +82,7 @@ class TokenService:
 
     @staticmethod
     def decode_jwt_token(token: str) -> dict:
-        """Декодирование JWT токена."""
+        """Token decoding."""
         try:
             return jwt.decode(
                 token,
@@ -94,18 +96,18 @@ class TokenService:
 
 
 class AuthService(TokenService):
-    """Сервис авторизации."""
+    """Auth service."""
 
     @staticmethod
     def hash_password(password: str) -> str:
-        """Хэширование пароля."""
+        """Password hashing."""
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password.encode(ENCODING_FORMAT), salt)
         return hashed_password.decode(ENCODING_FORMAT)
 
     @staticmethod
     def check_password(password: str, hashed_password: str) -> bool:
-        """Проверка пароля."""
+        """Password check."""
         return bcrypt.checkpw(
             password.encode(ENCODING_FORMAT),
             hashed_password.encode(ENCODING_FORMAT),
@@ -118,7 +120,7 @@ class AuthService(TokenService):
         session: AsyncSession,
         redis: Redis,
     ) -> str:
-        """Регистрация пользователя."""
+        """User registration."""
         query_result = await session.execute(
             select(User).where(User.login == login),
         )
@@ -142,7 +144,7 @@ class AuthService(TokenService):
         password: str,
         session: AsyncSession,
     ) -> User:
-        """Проверка наличия пользователя в бд."""
+        """Get user from db."""
         query_result = await session.execute(
             select(User).where(User.login == login),
         )
@@ -161,7 +163,7 @@ class AuthService(TokenService):
         session: AsyncSession,
         redis: Redis,
     ) -> str | None:
-        """Аутентификация пользователя."""
+        """User authentication."""
         user = await AuthService.get_user(login, password, session)
         user_id = user.id
         token = await TokenService.get_token(user_id, redis)
@@ -173,7 +175,7 @@ class AuthService(TokenService):
 
     @staticmethod
     async def verify(user_id: int, session: AsyncSession):
-        """Верификация пользователя в хранилище."""
+        """User verification in db."""
         query_result = await session.execute(
             select(User).where(User.id == user_id),
         )

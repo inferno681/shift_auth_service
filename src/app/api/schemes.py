@@ -4,7 +4,7 @@ from app.constants import KAFKA_RESPONSE
 
 
 class UserCreate(BaseModel):
-    """Схема регистрации пользователя."""
+    """User registration scheme."""
 
     login: str = Field(
         description='Логин',
@@ -20,31 +20,31 @@ class UserCreate(BaseModel):
 
 
 class UserToken(BaseModel):
-    """Схема отдачи токена."""
+    """Token response scheme."""
 
     token: str | None = None
 
 
 class UserTokenCheck(BaseModel):
-    """Схема проверки токена."""
+    """Token check scheme."""
 
     user_id: PositiveInt | None = None
     is_token_valid: bool
 
 
 class UserTokenCheckRequest(BaseModel):
-    """Схема передачи токена для проверки."""
+    """Token check request scheme."""
 
     token: str
 
 
 class IsReady(BaseModel):
-    """Схема ответа health check."""
+    """Health check response scheme."""
 
     is_ready: bool
 
 
 class KafkaResponse(BaseModel):
-    """Ответ на отправку фото."""
+    """Photo upload response scheme."""
 
     message: str = KAFKA_RESPONSE

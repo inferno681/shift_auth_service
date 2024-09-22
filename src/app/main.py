@@ -31,7 +31,7 @@ log = logging.getLogger('uvicorn')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Запуск и остановка продьюсера кафка, создание директории для фото."""
+    """Photo directory creation, kafka producer, tracer, redis start and stop."""  # noqa: E501
     if not os.path.exists(config.service.photo_directory):  # type: ignore
         os.makedirs(config.service.photo_directory)  # type: ignore
         log.info('Directory created')
@@ -101,7 +101,7 @@ app.mount('/metrics', metrics_app)
 
 @app.middleware('http')
 async def metrics_middleware(request: Request, call_next):
-    """Middleware для формирования метрик."""
+    """Metrics for prometheus middleware."""
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
@@ -125,7 +125,7 @@ async def metrics_middleware(request: Request, call_next):
 
 @app.middleware('http')
 async def tracing_middleware(request: Request, call_next):
-    """Middleware для трейсинга."""
+    """Tracing middleware."""
     path = request.url.path
     if path.endswith(('/ready', '/metrics/', '/docs', '/openapi.json')):
         return await call_next(request)

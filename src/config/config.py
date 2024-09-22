@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class _SettingsModel(BaseSettings):
+    """Base settings."""
 
     @classmethod
     def from_yaml(cls, config_path: str) -> '_SettingsModel':
@@ -26,11 +27,13 @@ class _SettingsModel(BaseSettings):
         env_settings,
         file_secret_settings,
     ):
-        """Определяем приоритет использования переменных."""
+        """Variables priority."""
         return init_settings, env_settings, file_secret_settings
 
 
 class _ServiceSettings(_SettingsModel):
+    """Service settings validation."""
+
     title: str
     description: str
     host: str
@@ -58,7 +61,7 @@ class _ServiceSettings(_SettingsModel):
 
 
 class _SettingsSecret(BaseSettings):
-    """Базовый класс настроек."""
+    """Secret settings validation."""
 
     SECRET: SecretStr = SecretStr('default_secret')
     db_password: SecretStr = SecretStr('password')
@@ -70,7 +73,7 @@ class _SettingsSecret(BaseSettings):
 
 
 class _JaegerSettings(_SettingsModel):
-    """Валидация настроек настроек jaeger."""
+    """Jaeger settings validation."""
 
     service_name: str
     host: str
@@ -81,7 +84,7 @@ class _JaegerSettings(_SettingsModel):
 
 
 class _RedisSettings(_SettingsModel):
-    """Валидация настроек настроек redis."""
+    """Redis settings validation."""
 
     url: str
     db: int
@@ -89,7 +92,7 @@ class _RedisSettings(_SettingsModel):
 
 
 class Settings(_SettingsModel, _SettingsSecret):
-    """Настройки сервиса."""
+    """Service settings."""
 
     service: _ServiceSettings
     jaeger: _JaegerSettings
@@ -97,7 +100,7 @@ class Settings(_SettingsModel, _SettingsSecret):
 
     @property
     def database_url(self):
-        """Ссылка для подключения к базе данных."""
+        """Database async link."""
         return (
             f'postgresql+asyncpg://{self.service.db_username}:'
             f'{self.db_password.get_secret_value()}@'

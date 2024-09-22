@@ -31,13 +31,13 @@ async def crate_and_drop_database():
 
 @pytest.fixture(scope='session')
 def anyio_backend():
-    """Бэкэнд для тестирования."""
+    """Backend for test."""
     return 'asyncio'
 
 
 @pytest.fixture(scope='session')
 async def client():
-    """Фикстура клиента."""
+    """Client for testing."""
     from app.main import app
 
     async with LifespanManager(app):
