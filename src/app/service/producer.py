@@ -6,19 +6,19 @@ from config import config
 
 
 class KafkaProducer:
-    """Класс продьюсера кафка для удобства инициализации."""
+    """Kafka producer."""
 
     def __init__(self, bootstrap_servers: str):
-        """Конструктор класса."""
+        """Kafka producer initialization."""
         self.bootstrap_servers = bootstrap_servers
         self.producer = None
 
     def serializer(self, value):
-        """Метод сериализации сообщений."""
+        """Message serializer."""
         return json.dumps(value).encode('utf-8')
 
     async def start(self):
-        """Метод запуска продьюсера в одном event_loop с приложением."""
+        """Kafka producer start method."""
         self.producer = AIOKafkaProducer(
             bootstrap_servers=self.bootstrap_servers,
             value_serializer=self.serializer,
@@ -26,12 +26,12 @@ class KafkaProducer:
         await self.producer.start()
 
     async def stop(self):
-        """Метод остановки продьюсера."""
+        """Kafka producer stop method."""
         if self.producer:
             await self.producer.stop()
 
     async def send_message(self, topic: str, user_data: dict[int, str]):
-        """Метод для отправки сообщения."""
+        """Send message method."""
         if self.producer is None:
             raise RuntimeError('Producer is not started')
         await self.producer.send_and_wait(

@@ -1,110 +1,112 @@
-<details><summary><h1>Настройка локального окружения</h1></summary>
+<details><summary><h1>Local Environment Setup</h1></summary>
 
-Для внесения изменений в репозиторий необходимо настроить работу внутри devcontainer-а.
+To make changes to the repository, you need to work within a devcontainer.
 
-- Устновить [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- Установить [Visual Studio Code](https://code.visualstudio.com/download)
-- [Настроить Visual Studio Code и Docker для использования Devcontainers](https://code.visualstudio.com/docs/devcontainers/containers#_getting-started)
-- [Настроить Git и SSH для работы в Devcontainer](https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials)
-- [Установить шрифт Meslo Nerd Font для CLI в терминале](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts)
-- По необходимости установить и настроить kubectl, внутри контейнера будут использованы настройки с хоста
-- Склонировать этот репозиторий на рабочую станцию
-- Открыть директорию с репозиторием через Visual Studio Code
-- Установить [рекомендуемые плагины](.vscode/extensions.json) Visual Studio Code
-- Ввести `Ctrl+Shift+P` или `Cmd+Shift+P` и выбрать `Dev Containers: Rebuild and Reopen in Container`
+- Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- Install [Visual Studio Code](https://code.visualstudio.com/download)
+- [Set up Visual Studio Code and Docker to use Devcontainers](https://code.visualstudio.com/docs/devcontainers/containers#_getting-started)
+- [Configure Git and SSH for working in Devcontainer](https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials)
+- [Install the Meslo Nerd Font for CLI in the terminal](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts)
+- Optionally, install and configure kubectl, as the container will use the host's settings
+- Clone this repository to your workstation
+- Open the repository directory in Visual Studio Code
+- Install the [recommended Visual Studio Code extensions](.vscode/extensions.json)
+- Press `Ctrl+Shift+P` or `Cmd+Shift+P` and select `Dev Containers: Rebuild and Reopen in Container`
 
 </details>
 
-<details><summary><h1>Инструкция по установке</h1></summary>
+<details><summary><h1>Installation Guide</h1></summary>
 
-- Клонируйте репозиторий и перейдите в него.
+- Clone the repository and navigate into it.
 ```bash
-git clone git@hub.mos.ru:shift-python/y2024/homeworks/vstakrotskij/auth_service.git
+git clone git@github.com:inferno681/shift_auth_service.git
 ```
-- Создайте файл .env, в корневой папке проекта, с переменными окружения.
+- Create a .env file in the root directory of the project with environment variables:
 ```
-SECRET = (секрет для создания токена)
+SECRET = (secret for token creation)
 ```
-- Для установки виртуального окружения с помощью Poetry нужно установить его через pip:
+- To set up a virtual environment using Poetry, install it via pip:
 ```bash
 pip install poetry
 ```
-- Для установки зависимостей выполните команду:
+- To install the dependencies, run the command:
 
 ```bash
 poetry install
 ```
-- Для запуска API выполните команду:
+- To start the API, run the command:
 ```bash
 python src/app/main.py
 ```
+
 </details>
 
-<details><summary><h1>Инструкция по запуску линтера</h1></summary>
+<details><summary><h1>Linter and static type checker Execution Guide</h1></summary>
 
-- Для установки виртуального окружения с помощью Poetry нужно установить его через pip:
+- To set up a virtual environment using Poetry, install it via pip:
 ```bash
 pip install poetry
 ```
-- Для установки зависимостей выполните команду:
+- To install the dependencies, run the command:
 
 ```bash
 poetry install
 ```
-- Для запуска линтера выполните команду:
+- To run the linter, execute the command:
 
 ```bash
 flake8 src/
 ```
 
-</details>
-<details><summary><h1>Инструкция по тестированию</h1></summary>
+- To run the static type checker, execute the command:
 
-- Для установки виртуального окружения с помощью Poetry нужно установить его через pip:
+```bash
+mypy src/
+```
+</details>
+
+<details><summary><h1>Integration Tests Execution Guide</h1></summary>
+
+- To set up a virtual environment using Poetry, install it via pip:
 ```bash
 pip install poetry
 ```
-- Для установки зависимостей выполните команду:
+- To install the dependencies, run the command:
 
 ```bash
 poetry install
 ```
-- Для запуска кафка для интеграционных тестов выполните команду:
+
+- To start the services, execute the command:
 
 ```bash
-docker compose up
+docker compose -f docker-compose-test.yaml up
 ```
+if you use devcontainer skip next step.
+- In the file src/config/config.yaml, replace the base_url values for each service with 127.0.0.1:(port from docker-compose-test.yaml)
 
-- Команда для запуска тестов:
+- To run the integration tests, execute the command:
 
 ```bash
-pytest src/tests/integration/
+pytest src/tests/integration
 ```
+
 </details>
 
-<details><summary><h1>Инструкция по применению миграций</h1></summary>
+<details><summary><h1>Manifest Application Guide</h1></summary>
 
-- При активированом виртуальном окружени и доступной бд выполните команду:
-
-```bash
-alembic upgrade head
-```
-</details>
-
-<details><summary><h1>Инструкция по применению манифестов</h1></summary>
-
-- Для загрузки манифестов кубернетис для каждого файла в папке /kuber/ необходимо выполнить следующую команду:
+- To load Kubernetes manifests for each file in the /kuber/ folder, run the following command:
 
 ```bash
 kubectl apply -f ./kuber/<filename>.yaml
 ```
 </details>
 
-<details><summary><h1>Инструкция по запуску приложения в кубернетис с использованием Helm</h1></summary>
+<details><summary><h1>Running the Application in Kubernetes using Helm</h1></summary>
 
-- Выполните следующую команду:
+- Run the following command:
 
 ```bash
-helm install <prefix> ./auth-service-chart
+helm install <prefix> ./api-gateway-chart
 ```
 </details>

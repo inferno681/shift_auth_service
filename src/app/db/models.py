@@ -14,7 +14,7 @@ intpk = Annotated[int, mapped_column(primary_key=True)]
 
 
 class User(Base):
-    """Модель пользователя."""
+    """User model."""
 
     id: Mapped[intpk]
     login: Mapped[str] = mapped_column(String(LOGIN_LENGTH), unique=True)

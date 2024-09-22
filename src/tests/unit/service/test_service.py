@@ -8,14 +8,14 @@ auth_service = AuthService()
 
 
 def test_decode_jwt_expired_token(expired_token):
-    """Тест декодирования просроченного токена."""
+    """Expired token decoding test."""
     with pytest.raises(jwt.ExpiredSignatureError) as excinfo:
         AuthService.decode_jwt_token(expired_token)
     assert str(excinfo.value) == TOKEN_EXPIRED_MESSAGE
 
 
 def test_decode_jwt_invalid_token():
-    """Тест декодирования некорректного токена."""
+    """Invalid token decoding test."""
     token = AuthService.generate_jwt_token(1)
     invalid_token = ''.join([token[:-5], '12345'])
     with pytest.raises(jwt.InvalidTokenError) as excinfo:
@@ -24,5 +24,5 @@ def test_decode_jwt_invalid_token():
 
 
 def test_is_token_expired(expired_token):
-    """Тест функции _is_token_expired."""
+    """Test for method is_token_expired."""
     assert AuthService.is_token_expired(expired_token) is True

@@ -11,6 +11,6 @@ async_session = async_sessionmaker(bind=engine)
 
 
 async def get_async_session():
-    """Генератор асинхронных сессий."""
+    """Async session generator."""
     async with async_session() as session:
         yield session

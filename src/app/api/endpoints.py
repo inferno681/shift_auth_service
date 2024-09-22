@@ -40,7 +40,7 @@ async def registration(
     request: Request,
     session: AsyncSession = Depends(get_async_session),
 ):
-    """Эндпоинт регистрации пользователя."""
+    """User registration endpoint."""
     with global_tracer().start_active_span('register_user') as scope:
         scope.span.set_tag('login', user.login)
         return UserToken(
@@ -59,7 +59,7 @@ async def authentication(
     request: Request,
     session: AsyncSession = Depends(get_async_session),
 ):
-    """Эндпоинт аутентификации пользователя."""
+    """User authentication endpoint."""
     with global_tracer().start_active_span('login_user') as scope:
         scope.span.set_tag('login', user.login)
         return UserToken(
@@ -77,7 +77,7 @@ async def check_token(
     token: UserTokenCheckRequest,
     request: Request,
 ):
-    """Эндпоинт проверки токена пользователя."""
+    """Token check endpoint."""
     with global_tracer().start_active_span('check_token') as scope:
         scope.span.set_tag('token', token.token[:10] + '...')
         return await AuthService.check_token(
@@ -88,7 +88,7 @@ async def check_token(
 
 @router_healthz.get('/healthz/ready', response_model=IsReady)
 async def check_health():
-    """Эндпоинт проверки запущен ли сервис."""
+    """Health check endpoint."""
     return IsReady(is_ready=True)
 
 
@@ -98,7 +98,7 @@ async def verify(
     file: UploadFile = File(),
     session: AsyncSession = Depends(get_async_session),
 ):
-    """Эндпоинт для загрузки фото."""
+    """Photo upload endpoint."""
     with global_tracer().start_active_span('photo_upload') as scope:
         if file.filename is None:
             scope.span.set_tag('error', FILENAME_ERROR)

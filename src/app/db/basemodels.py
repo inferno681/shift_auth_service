@@ -2,11 +2,11 @@ from sqlalchemy.orm import DeclarativeBase, declared_attr
 
 
 class Base(DeclarativeBase):
-    """Абстрактный базовый класс для создания таблиц."""
+    """Abstract base class for tables in db."""
 
     __abstract__ = True
 
     @declared_attr
     def __tablename__(cls):
-        """Использование названий таблиц из названий класса."""
+        """Table names from class names."""
         return cls.__name__.lower()

@@ -19,7 +19,7 @@ from app.metrics import (
 
 @pytest.mark.anyio
 async def test_registration(client, test_user, registration_link):
-    """Тест регистрации пользователя."""
+    """User registration test."""
     response = await client.post(registration_link, json=test_user)
     assert response.status_code == 200
     async with engine.connect() as conn:
@@ -32,7 +32,7 @@ async def test_registration(client, test_user, registration_link):
 
 @pytest.mark.anyio
 async def test_authentication(client, test_user, auth_link):
-    """Тест аутентификации пользователя."""
+    """User authentication link."""
     response = await client.post(auth_link, json=test_user)
     assert response.status_code == 200
     assert 'token' in response.json()
@@ -50,7 +50,7 @@ async def test_registration_existing_user(
     test_user,
     registration_link,
 ):
-    """Тест регистрации уже существующего пользователя."""
+    """Existing user registration test."""
     response = await client.post(registration_link, json=test_user)
     assert response.status_code == 400
     assert response.json()['detail'] == USER_EXISTS_MESSAGE.format(
@@ -64,7 +64,7 @@ async def test_wrong_login(
     client,
     wrong_user_data,
 ):
-    """Тест аутентификации пользователя с некорректными данными."""
+    """Auth test with incorrect data."""
     response = await client.post(auth_link, json=wrong_user_data)
     assert response.status_code == 404
     assert response.json()['detail'] == USER_NOT_FOUND
@@ -72,7 +72,7 @@ async def test_wrong_login(
 
 @pytest.mark.anyio
 async def test_token_check(client, auth_link, test_user, check_link):
-    """Тест проверки токена."""
+    """Token check test."""
     response = await client.post(auth_link, json=test_user)
     token = response.json()['token']
     response = await client.post(check_link, json={'token': token})
@@ -82,7 +82,7 @@ async def test_token_check(client, auth_link, test_user, check_link):
 
 @pytest.mark.anyio
 async def test_no_user_token_check(client, check_link, no_user_token):
-    """Тест проверки токена несуществующего пользователя."""
+    """Non-existent user token verification test."""
     response = await client.post(check_link, json={'token': no_user_token})
     assert response.status_code == 200
     assert response.json()['is_token_valid'] is False
@@ -90,7 +90,7 @@ async def test_no_user_token_check(client, check_link, no_user_token):
 
 @pytest.mark.anyio
 async def test_check_healthz(client, check_health_link):
-    """Тест проверки запущени ли сервис."""
+    """Health check test."""
     response = await client.get(check_health_link)
     assert response.status_code == 200
     assert response.json()['is_ready'] is True
@@ -105,7 +105,7 @@ async def test_photo_upload(
     auth_link,
     check_link,
 ):
-    """Тест загрузки фото."""
+    """Photo upload test."""
     response = await client.post(auth_link, json=test_user)
     token = response.json()['token']
     response = await client.post(check_link, json={'token': token})
@@ -122,7 +122,7 @@ async def test_photo_upload(
 
 @pytest.mark.anyio
 async def test_wrong_file_upload(client, verify_link, wrong_file):
-    """Тест загрузки фото."""
+    """Wrong file upload test."""
     response = await client.post(
         verify_link,
         data={'user_id': 1},
@@ -141,7 +141,7 @@ async def test_authentication_without_token(
     auth_link,
     delete_token,
 ):
-    """Тест аутентификации пользователя без токена в бд."""
+    """Auth user test without token in redis."""
     assert await app.state.redis.get(1) is None
     response = await client.post(auth_link, json=test_user)
     assert response.status_code == 200
@@ -151,7 +151,7 @@ async def test_authentication_without_token(
 
 @pytest.mark.anyio
 async def test_metrics(client, metrics_link):
-    """Тест эндпоинта для сбора метрик."""
+    """Metrics endpoint test."""
     response = await client.get(metrics_link)
     assert response.status_code == 200
     assert READY_PROBE._documentation in response.text
