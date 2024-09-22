@@ -1,3 +1,5 @@
+[![main](https://github.com/inferno681/shift_auth_service/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/inferno681/shift_auth_service/actions/workflows/main.yaml)
+[![codecov](https://codecov.io/gh/inferno681/shift_auth_service/graph/badge.svg?token=P80YM7D0MW)](https://codecov.io/gh/inferno681/shift_auth_service)
 # Auth service
 
 Authorization service.
